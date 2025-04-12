@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["prismaSchemaFolder"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Users {
+  id             Int                 @id @default(autoincrement())
+  name           String              @db.VarChar(100)
+  username       String              @unique @db.VarChar(50)
+  password       String              @db.VarChar(255)
+  whatsapp       String?             @db.VarChar(20)
+  balance        Int                 @default(0)
+  role           String              @db.VarChar(20) @default("Member")
+  apiKey         String?             @unique @db.VarChar(64) @map("api_key")
+  isDeleted      Boolean             @default(false) @map("is_deleted")
+  deletedAt      DateTime?           @map("deleted_at")
+  isEmailVerified  Boolean          @default(false)
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  tokenVerification VerificationToken[]
+  accounts       Account[]
+  sessions       Session[]
+
+  @@index([username, balance], name: "users_username_balance_idx")
+  @@index([role, balance], name: "users_role_balance_idx")
+  @@index([whatsapp], name: "users_whatsapp_idx")
+  @@index([username, role, whatsapp], name: "users_username_role_whatsapp_idx")
+  @@map("users")
+}
+
+model Account {
+  id                String    @id @default(cuid())
+  userId            Int
+  user              Users     @relation(fields: [userId], references: [id])
+  type              String    @db.VarChar(20)
+  provider          String    @db.VarChar(50)
+  providerAccountId String    @map("provider_account_id") @db.VarChar(100)
+  refreshToken      String?   @db.Text @map("refresh_token")
+  accessToken       String?   @db.Text @map("access_token")
+  expiresAt         Int?      @map("expires_at")
+  tokenType         String?   @map("token_type") @db.VarChar(20)
+  scope             String?   @map("scope") @db.VarChar(100)
+  idToken           String?   @db.Text @map("id_token")
+  sessionState      String?   @map("session_state") @db.VarChar(100)
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@unique([provider, providerAccountId], name: "account_provider_unique")
+  @@index([userId], name: "account_user_id_idx")
+  @@map("accounts")
+}
+
+model Session {
+  id           String    @id @default(cuid())
+  sessionToken String    @unique @map("session_token") @db.VarChar(255)
+  userId       Int
+  user         Users     @relation(fields: [userId], references: [id])
+  expires      DateTime
+  ipAddress    String?   @map("ip_address") @db.VarChar(45)
+  userAgent    String?   @db.Text @map("user_agent")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([userId], name: "session_user_id_idx")
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String    @db.VarChar(100)
+  token      String    @unique @db.VarChar(64)
+  expires    DateTime
+  type       String    @db.VarChar(100)
+  otp        String?   @db.VarChar(6)
+  username   String    @db.VarChar(50)
+  user       Users     @relation(fields: [username], references: [username])
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@unique([identifier, token], name: "verification_token_identifier_token_unique")
+  @@index([username], name: "verification_token_username_idx")
+  @@map("verification_tokens")
+}
