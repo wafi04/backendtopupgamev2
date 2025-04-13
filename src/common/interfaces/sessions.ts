@@ -1,3 +1,4 @@
+import { ROLE_USER } from "../constants"
 
 export type Sessions = {
     id : string
@@ -7,6 +8,12 @@ export type Sessions = {
     ipAddress    : string | null
     userAgent : string | null
     createdAt : string | null
+}
+
+export interface SessionsWithUser extends Sessions{
+    username: string
+    isEmailVerified: boolean
+    role : ROLE_USER
 }
 
 export type CreateSessions = {

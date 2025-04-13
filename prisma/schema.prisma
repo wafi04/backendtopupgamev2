@@ -57,7 +57,7 @@ model Account {
 
 model Session {
   id           String    @id @default(cuid())
-  sessionToken String    @unique @map("session_token") @db.VarChar(255)
+  sessionToken String    @unique @map("session_token") @db.Text()
   userId       Int
   user         Users     @relation(fields: [userId], references: [id])
   expires      DateTime
@@ -71,7 +71,7 @@ model Session {
 
 model VerificationToken {
   identifier String    @db.VarChar(100)
-  token      String    @unique @db.VarChar(64)
+  token      String    @unique @db.Text()
   expires    DateTime
   type       String    @db.VarChar(100)
   otp        String?   @db.VarChar(6)

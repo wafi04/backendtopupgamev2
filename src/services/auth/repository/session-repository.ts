@@ -1,9 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import  prisma  from "@/lib/prisma";
 import { ERROR_CODES } from "@/common/constants/error";
-import { CreateSessions, Sessions } from "@/common/interfaces/sessions";
+import { CreateSessions, Sessions, SessionsWithUser } from "@/common/interfaces/sessions";
 import { ApiError } from "@/common/utils/apiError";
-import { Prisma } from "@prisma/client";
-import { EXPIRES_DATE_TOKEN } from "@/common/constants";
+import { Prisma, Session } from "@prisma/client";
+import { EXPIRES_DATE_TOKEN, ROLE_USER } from "@/common/constants";
 
 export class SessionRepository {
   private  handlePrismaError(error: unknown): never {
@@ -24,10 +24,11 @@ export class SessionRepository {
     }
   }
 
-   async createSession(data: CreateSessions): Promise<Sessions> {
+   async createSession(data: CreateSessions,id : string): Promise<Sessions> {
     try {
       const session = await prisma.session.create({
         data: {
+          id,
           expires: EXPIRES_DATE_TOKEN,
           sessionToken: data.sessionToken,
           ipAddress: data.ipAddress,
@@ -42,10 +43,20 @@ export class SessionRepository {
     }
   }
 
-   async getSession(sessionToken: string): Promise<Sessions> {
+   async getSession(sessionToken: string): Promise<SessionsWithUser> {
     try {
       const session = await prisma.session.findUnique({
         where: { sessionToken },
+        include: {
+          user: {
+            select: {
+              id: true,
+              role : true,
+              username: true,
+              isEmailVerified : true,
+            }
+          }
+        }
       });
 
       if (!session) {
@@ -57,7 +68,7 @@ export class SessionRepository {
         throw new ApiError(401, ERROR_CODES.SESSION_EXPIRED, "Session has expired");
       }
 
-      return this.formatSessionResponse(session);
+      return {...this.formatSessionResponse(session),username : session.user.username,userId : session.user.id,isEmailVerified : session.user.isEmailVerified,role : session.user.role as ROLE_USER}
     } catch (error) {
       this.handlePrismaError(error);
     }
@@ -83,7 +94,9 @@ export class SessionRepository {
     }
   }
 
-  private  formatSessionResponse(session: any): Sessions {
+  private  formatSessionResponse(session: Session
+    
+  ): Sessions {
     if (!session) {
       throw new ApiError(404, ERROR_CODES.NOT_FOUND, "Session data is empty");
     }
@@ -92,9 +105,9 @@ export class SessionRepository {
       id: session.id,
       sessionToken: session.sessionToken,
       userId: session.userId,
-      expires: session.expires.toISOString(),
-      ipAddress: session.ipAddress || undefined,
-      userAgent: session.userAgent || undefined,
+      expires: session.expires?.toISOString() as string,
+      ipAddress: session.ipAddress || null,
+      userAgent: session.userAgent || null,
       createdAt: session.createdAt.toISOString(),
     };
   }

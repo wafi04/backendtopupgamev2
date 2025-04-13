@@ -1,12 +1,38 @@
-import { PrismaClient } from "@prisma/client";
+// prisma.ts atau database.ts
+import { ConfigEnv } from '@/config/env';
+import { PrismaClient } from '@prisma/client';
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+// Ambil environment dari process.env.NODE_ENV atau default 'development'
+const environment = (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test';
 
-export const prisma =
-  globalForPrisma.prisma || new PrismaClient({
-   log : ["error","info","query"]
+
+const config = ConfigEnv(environment);
+
+// Buat instance PrismaClient
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    // Anda bisa menambahkan opsi prisma di sini jika diperlukan
+    log: environment === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    datasources: {
+      db: {
+        url: config.DATABASE_URL || process.env.DATABASE_URL
+      }
+    }
   });
+};
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+// Deklarasi tipe global supaya bisa menggunakan singleton pattern
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+
+// Gunakan global variable untuk menyimpan instance prisma
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClientSingleton | undefined;
+};
+
+// Buat singleton instance
+const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
+
+// Jika bukan di production, simpan ke global object
+if (environment !== 'production') globalForPrisma.prisma = prisma;
+
+export default prisma;

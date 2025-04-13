@@ -17,6 +17,7 @@ export async function HashingPassword(password: string, saltRounds: number = 10)
     
     return hashedPassword;
   } catch (error) {
+    console.log(error)
     throw new Error('Failed to hash password');
   }
 }

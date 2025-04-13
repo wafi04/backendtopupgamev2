@@ -1,5 +1,5 @@
 import { ERROR_CODES } from "@/common/constants/error";
-import { prisma } from "@/lib/prisma";
+import  prisma  from "@/lib/prisma";
 import { ApiError } from "@/common/utils/apiError";
 import { Prisma } from "@prisma/client";
 

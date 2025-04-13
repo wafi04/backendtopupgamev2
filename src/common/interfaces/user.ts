@@ -1,4 +1,7 @@
-// common/interfaces/user.ts
+export const ADMIN_ROLE = "Admin"
+export const MEMBER_ROLE = "Member"
+export const PLATINUM_ROLE = "Platinum"
+
 export interface UserData { 
     name: string; 
     id: number; 

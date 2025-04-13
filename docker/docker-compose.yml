@@ -8,8 +8,8 @@ services:
     environment:
       POSTGRES_USER: vazzuniverse
       POSTGRES_PASSWORD: vazzuniverse
-      POSTGRES_DB: vazzuniverse  # Diperbaiki typo (vazzuniserse -> vazzuniverse)
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"  # Optimasi collation
+      POSTGRES_DB: vazzuniverse  
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"  
       TZ: Asia/Jakarta
     volumes:
       - postgres_data:/var/lib/postgresql/data

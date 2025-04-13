@@ -5,6 +5,18 @@ import * as bcrypt from "bcrypt";
 export function GenerateApiKey(): string {
   return randomBytes(32).toString('base64').replace(/[^a-zA-Z0-9]/g, '');
 }
+export function GenerateId(prefix?: string): string {
+    const timestamp = Date.now();
+  return `${prefix ?? "VAZZ"}${timestamp}`
+}
+
+export function GenerateUniqueString(length: number = 16): string {
+  const timestamp = Date.now().toString(36);
+  const randomStr = randomBytes(Math.ceil(length / 2))
+    .toString('hex')
+    .slice(0, length);
+  return `${timestamp}-${randomStr}`;
+}
 
 // Fungsi untuk generate random token
 export function generateRandomToken(length: number = 32): string {

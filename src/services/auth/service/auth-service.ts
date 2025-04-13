@@ -3,13 +3,14 @@ import { SessionRepository } from "../repository/session-repository";
 import { UserRepository } from "../repository/user-repository";
 import { ApiError } from "@/common/utils/apiError";
 import { ERROR_CODES } from "@/common/constants/error";
-import { generateSessionToken } from "@/common/utils/generate";
+import { GenerateId, generateSessionToken, GenerateUniqueString } from "@/common/utils/generate";
 import { HashingPassword, VerifyPassword } from "../repository/helpers";
+import { AuthContextManager } from "@/middleware/middleware-auth";
 
 export class AuthService {
   constructor(
     private userRepo: UserRepository,
-    private sessionRepo: SessionRepository,
+    private authContextManager : AuthContextManager
   ) {}
 
   async register(createData: CreateUser): Promise<UserData> {
@@ -27,33 +28,65 @@ export class AuthService {
       throw error;
     }
   }
-  async login(loginData: LoginData, requestInfo?: { ipAddress?: string, userAgent?: string }): Promise<{ user: UserData, sessionToken: string }> {
+  async login(
+    loginData: LoginData,
+    requestInfo?: { ipAddress?: string; userAgent?: string }
+  ): Promise<{ user: UserData; token: string }> {
     try {
       const user = await this.userRepo.getUserByUsername(loginData.username);
       if (!user) {
-        throw new ApiError(401, ERROR_CODES.UNAUTHORIZED, "Invalid username or password");
+        throw new ApiError(401, ERROR_CODES.UNAUTHORIZED, "Username atau password tidak valid");
       }
-
+      
       const passwordMatch = await VerifyPassword(loginData.password, user.password as string);
       if (!passwordMatch) {
-        throw new ApiError(401, ERROR_CODES.UNAUTHORIZED, "Invalid username or password");
+        throw new ApiError(401, ERROR_CODES.UNAUTHORIZED, "Username atau password tidak valid");
       }
-
-      const sessionToken = generateSessionToken(user.id.toString(),user.username,user.role,user.isEmailVerified);
-      await this.sessionRepo.createSession({
-        userId: user.id,
-        sessionToken: sessionToken,
-        ipAddress: requestInfo?.ipAddress || '',
-        userAgent: requestInfo?.userAgent || '',
-      });
-
+      const sessionId = GenerateId("SESS")
+      console.log(sessionId)
+      
+      // Buat JWT token dengan context
+      const token = await this.authContextManager.createSessionWithContext(
+        {
+          userId: user.id,
+          username: user.username,
+          role: user.role,
+          emailVerified: user.isEmailVerified,
+        },
+        {
+          ...requestInfo,
+          sessionId
+        }
+      );
+      
       const userResponse = { ...user };
       delete userResponse.password;
-
+      
       return {
         user: userResponse,
-        sessionToken: sessionToken
+        token
       };
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async refreshToken(token: string): Promise<string> {
+    try {
+      return await this.authContextManager.refreshToken(token);
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  async logout(token: string): Promise<void> {
+    try {
+      // Implementasi logout - jika Anda menyimpan token di database
+      // Anda bisa mencatatnya sebagai "revoked" atau menghapusnya
+      
+      // Contoh implementasi dengan SessionRepository
+      const sessionRepo = new SessionRepository();
+      await sessionRepo.revokeSession(token);
     } catch (error) {
       throw error;
     }

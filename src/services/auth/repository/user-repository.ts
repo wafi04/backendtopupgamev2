@@ -1,10 +1,10 @@
 import { error } from "console";
 import { ERROR_CODES } from "../../../common/constants/error";
 import { CreateUser, UpdateUser, UserData } from "../../../common/interfaces/user";
-import { prisma } from "../../../lib/prisma";
 import { ApiError } from "../../../common/utils/apiError";
 import { GenerateApiKey } from "../../../common/utils/generate";
 import { Prisma } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
 
 export class UserRepository {
