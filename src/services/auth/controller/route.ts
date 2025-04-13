@@ -30,8 +30,7 @@ authRoutes.post("/register", asyncHandler(async (req: Request, res: Response) =>
   sendResponse(res,user,"User created Successfully",201)
 }));
 
-// Route untuk login
-  authRoutes.post("/login", asyncHandler(async (req: Request, res: Response) => {
+authRoutes.post("/login", asyncHandler(async (req: Request, res: Response) => {
     const { username, password } = req.body;
     
     const requestInfo = {
@@ -72,7 +71,6 @@ authRoutes.post('/logout', ContextAwareMiddleware.authMiddleware,asyncHandler( a
     if (token) {
       await authService.logout(token);
     }
-    
     sendResponse(res,null,"Logout Successfully",201)
   } catch (error) {
     next(error);

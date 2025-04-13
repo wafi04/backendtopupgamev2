@@ -5,6 +5,11 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
 export class SubCategoryRepositories {
+    private prisma;
+    
+    constructor(prismaClient = prisma) {
+        this.prisma = prismaClient;
+    }
     private  handlePrismaError(error: unknown): never {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
           switch (error.code) {
@@ -24,7 +29,7 @@ export class SubCategoryRepositories {
 
     async Create(req : CreateSubCategories){
         try {
-            return await prisma.subCategory.create({
+            return await this.prisma.subCategory.create({
                 data : {
                     ...req
                 }
@@ -37,7 +42,7 @@ export class SubCategoryRepositories {
 
     async Update(req : UpdateSubCategory,subCategoryId : number){
         try {
-            return await prisma.subCategory.update({
+            return await this.prisma.subCategory.update({
                 where : {
                     id : subCategoryId
                 },
@@ -76,8 +81,8 @@ export class SubCategoryRepositories {
             const skip = (page - 1) * limit
 
             const [total, data] = await Promise.all([
-                prisma.subCategory.count({ where }),
-                prisma.subCategory.findMany({
+                this.prisma.subCategory.count({ where }),
+                this.prisma.subCategory.findMany({
                     where,
                     skip,
                     take: limit,
@@ -106,7 +111,7 @@ export class SubCategoryRepositories {
 
     async Delete(req : DeleteSubcategory){
         try {
-            return await  prisma.subCategory.delete({
+            return await  this.prisma.subCategory.delete({
                 where : {
                     id : req.id
                 }

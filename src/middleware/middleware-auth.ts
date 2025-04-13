@@ -5,17 +5,15 @@ import { ApiError } from '@/common/utils/apiError';
 import { ERROR_CODES } from '@/common/constants/error';
 import { sendResponse } from '@/common/utils/response';
 import { ConfigEnv } from '@/config/env';
-import { GenerateUniqueString } from '@/common/utils/generate';
 
-// Ambil konfigurasi JWT dari environment
 const config = ConfigEnv();
 
 export interface AuthContext {
   userId: number;
   username: string;
   role: string;
-    emailVerified: boolean;
-    sessionId : string
+  emailVerified: boolean;
+  sessionId : string
   iat?: number;
   exp?: number;
 }
@@ -47,11 +45,7 @@ export class AuthContextManager {
         
       // Verifikasi dan decode token JWT
       const decoded = jwt.verify(token, this.jwtSecret) as AuthContext;
-      // Opsional: Verifikasi session di database jika diperlukan
-      // Ini bisa digunakan untuk "blacklist" token atau mencabut token
-      // sebelum waktu kedaluwarsa
-    //   await this.sessionRepo.getSession(token);
-      
+    
       return {
         userId: decoded.userId,
         username: decoded.username,
@@ -151,8 +145,7 @@ export class AuthContextManager {
         const currentTime = Math.floor(Date.now() / 1000);
         const tokenExpiry = decoded.exp || 0;
         
-        // Jika token expired tidak lebih dari 7 hari (contoh), masih bisa refresh
-        const refreshWindow = 7 * 24 * 60 * 60; // 7 hari dalam detik
+        const refreshWindow = 7 * 24 * 60 * 60; 
         
         if (currentTime - tokenExpiry <= refreshWindow) {
           return this.generateTokenWithContext({

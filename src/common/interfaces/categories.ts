@@ -31,22 +31,6 @@ export type FilterCategory  = {
     status? : string
 }
 
-// model SubCategory {
-//     id           Int       @id @default(autoincrement()) @map("id")
-//     categoryId   Int       @map("category_id")
-//     code         String    @map("code")
-//     name         String    @map("name")
-//     active       Boolean   @map("active")
-//     createdAt    DateTime? @default(now()) @map("created_at")
-//     updatedAt    DateTime? @updatedAt @map("updated_at")
-    
-//     category     Categories @relation(fields: [categoryId], references: [id])
-  
-//     @@index([code, categoryId, active])
-//     @@index([categoryId])
-//     @@map("sub_categories")
-//   }
-
 export interface SubCategoryData  {
     id : number
     categoryId : number
@@ -56,16 +40,20 @@ export interface SubCategoryData  {
     createdAt :  string
     updatedAt : string
 }
+
 export interface CreateSubCategories {
     categoryId : number
     code : string
     name : string
     active : boolean
 }
+
 export type  UpdateSubCategory = Partial<CreateSubCategories>
+
 export type  DeleteSubcategory = {
     id : number
 }
+
 export type FilterSubcategory = {
     categoryId? : number
     active? :  boolean

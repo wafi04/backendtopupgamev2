@@ -5,10 +5,11 @@ import { ContextAwareMiddleware} from "@/middleware/middleware-auth";
 import { ADMIN_ROLE } from "@/common/interfaces/user";
 import { sendResponse } from "@/common/utils/response";
 import { FilterSubcategory } from "@/common/interfaces/categories";
+import prisma from "@/lib/prisma";
 
-const subcategoriesRepo = new SubCategoryRepositories()
+const subcategoriesRepo = new SubCategoryRepositories(prisma)
 const subCategoriesService = new SubCategoryService(subcategoriesRepo)
-const subCategoriesController : Router =  Router()
+export const subCategoriesController : Router =  Router()
 const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

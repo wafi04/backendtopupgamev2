@@ -10,7 +10,7 @@ export type Sessions = {
     createdAt : string | null
 }
 
-export interface SessionsWithUser extends Sessions{
+export interface SessionsWithUser extends Sessions {
     username: string
     isEmailVerified: boolean
     role : ROLE_USER
