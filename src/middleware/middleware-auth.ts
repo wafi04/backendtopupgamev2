@@ -188,51 +188,28 @@ export class ContextAwareMiddleware {
   
   static roleMiddleware(roles: string[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
-      const authContext = (req as any).authContext as AuthContext;
+      const token = req.cookies.session_token;
       
-      if (!authContext) {
+      if (!token) {
         return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
       }
-      
-      if (!roles.includes(authContext.role)) {
-        return sendResponse(res, null, ERROR_CODES.FORBIDDEN, 403);
+
+      try {
+        await AuthContextManager.attachContextToRequest(req, token);
+        const authContext = (req as RequestAuthContext).authContext;
+
+        if (!authContext) {
+          return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
+        }
+        
+        if (!roles.includes(authContext.role)) {
+          return sendResponse(res, null, ERROR_CODES.FORBIDDEN, 403);
+        }
+        
+        next();
+      } catch (error) {
+        return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
       }
-      
-      next();
     };
   }
-  
-//   static permissionMiddleware(permissions: string[]) {
-//     return async (req: Request, res: Response, next: NextFunction) => {
-//       const authContext = (req as any).authContext as AuthContext;
-      
-//       if (!authContext) {
-//         return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
-//       }
-      
-//       // Implementasi pemeriksaan permission - butuh informasi tambahan dalam token
-//       // atau query database berdasarkan userId dan permission
-//       // Ini contoh sederhana, implementasi nyata mungkin berbeda
-//     //   const userPermissions = await getUserPermissions(authContext.userId);
-      
-//       const hasAllPermissions = permissions.every(
-//         permission => userPermissions.includes(permission)
-//       );
-      
-//       if (!hasAllPermissions) {
-//         return sendResponse(res, null, ERROR_CODES.FORBIDDEN, 403);
-//       }
-      
-//       next();
-//     };
-//   }
 }
-
-// // Fungsi helper untuk mendapatkan permission user
-// // Implementasi tergantung pada struktur database Anda
-// async function getUserPermissions(username : string): Promise<string[]> {
-//   // Contoh implementasi - ganti dengan logika sesuai aplikasi Anda
-//   const userRepo = new UserRepository(); // Anda perlu membuat repository ini
-//   const user = await userRepo.getUserByUsername(username);
-//   return user?.permissions || [];
-// }

@@ -2,10 +2,8 @@ import { Router, Request, Response, NextFunction } from "express";
 import { AuthService } from "../service/auth-service";
 import { UserRepository } from "../repository/user-repository";
 import { sendResponse } from "@/common/utils/response";
-import { APP_DOMAIN } from "@/common/constants";
 import { AuthContextManager, ContextAwareMiddleware, RequestAuthContext } from "@/middleware/middleware-auth";
 import { ERROR_CODES } from "@/common/constants/error";
-import { config } from "dotenv";
 import { ConfigEnv } from "@/config/env";
 
 // Inisialisasi repositories dan service

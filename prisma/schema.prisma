@@ -1,3 +1,4 @@
+//🧩Don't Edit this file.✨Generated in Sun Apr 13 2025 10:53:03 GMT+0700 (Indochina Time)✨
 generator client {
   provider = "prisma-client-js"
   previewFeatures = ["prismaSchemaFolder"]
@@ -9,30 +10,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-model Users {
-  id             Int                 @id @default(autoincrement())
-  name           String              @db.VarChar(100)
-  username       String              @unique @db.VarChar(50)
-  password       String              @db.VarChar(255)
-  whatsapp       String?             @db.VarChar(20)
-  balance        Int                 @default(0)
-  role           String              @db.VarChar(20) @default("Member")
-  apiKey         String?             @unique @db.VarChar(64) @map("api_key")
-  isDeleted      Boolean             @default(false) @map("is_deleted")
-  deletedAt      DateTime?           @map("deleted_at")
-  isEmailVerified  Boolean          @default(false)
-  createdAt      DateTime            @default(now()) @map("created_at")
-  updatedAt      DateTime            @updatedAt @map("updated_at")
-  tokenVerification VerificationToken[]
-  accounts       Account[]
-  sessions       Session[]
-
-  @@index([username, balance], name: "users_username_balance_idx")
-  @@index([role, balance], name: "users_role_balance_idx")
-  @@index([whatsapp], name: "users_whatsapp_idx")
-  @@index([username, role, whatsapp], name: "users_username_role_whatsapp_idx")
-  @@map("users")
-}
 
 model Account {
   id                String    @id @default(cuid())
@@ -82,4 +59,69 @@ model VerificationToken {
   @@unique([identifier, token], name: "verification_token_identifier_token_unique")
   @@index([username], name: "verification_token_username_idx")
   @@map("verification_tokens")
+}
+model Categories {
+  id            Int       @id @default(autoincrement()) @map("id")
+  nama          String    @map("nama")
+  subNama       String    @map("sub_nama")
+  brand         String    @db.Text @map("brand")
+  kode          String?   @unique @map("kode")
+  serverId      Int       @default(0) @map("server_id")
+  status        String    @default("active") @map("status")
+  thumbnail     String    @map("thumbnail")
+  tipe          String    @default("game") @map("tipe")
+  petunjuk      String?   @map("petunjuk")
+  ketLayanan    String?   @db.Text @map("ket_layanan")
+  ketId         String?   @db.Text @map("ket_id")
+  placeholder1  String    @db.Text @map("placeholder_1")
+  placeholder2  String    @db.Text @map("placeholder_2")
+  createdAt     DateTime? @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+  bannerLayanan String    @map("bannerlayanan")
+  
+  subCategories SubCategory[]
+
+  @@index([tipe, status])
+  @@map("kategoris")
+}
+
+
+model SubCategory {
+  id           Int       @id @default(autoincrement()) @map("id")
+  categoryId   Int       @map("category_id")
+  code         String    @map("code")
+  name         String    @map("name")
+  active       Boolean   @map("active")
+  createdAt    DateTime? @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+  
+  category     Categories @relation(fields: [categoryId], references: [id])
+
+  @@index([code, categoryId, active])
+  @@index([categoryId])
+  @@map("sub_categories")
+}
+model Users {
+  id             Int                 @id @default(autoincrement())
+  name           String              @db.VarChar(100)
+  username       String              @unique @db.VarChar(50)
+  password       String              @db.Text
+  whatsapp       String?             @db.Text
+  balance        Int                 @default(0)
+  role           String              @db.Text @default("Member")
+  apiKey         String?             @unique @db.Text @map("api_key")
+  isDeleted      Boolean             @default(false) @map("is_deleted")
+  deletedAt      DateTime?           @map("deleted_at")
+  isEmailVerified  Boolean          @default(false)
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  tokenVerification VerificationToken[]
+  accounts       Account[]
+  sessions       Session[]
+
+  @@index([username, balance], name: "users_username_balance_idx")
+  @@index([role, balance], name: "users_role_balance_idx")
+  @@index([whatsapp], name: "users_whatsapp_idx")
+  @@index([username, role, whatsapp], name: "users_username_role_whatsapp_idx")
+  @@map("users")
 }
