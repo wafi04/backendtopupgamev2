@@ -8,7 +8,6 @@ datasource db {
   url      = env("DATABASE_URL")
   relationMode = "prisma"
 }
-
 model Users {
   id             Int                 @id @default(autoincrement())
   name           String              @db.VarChar(100)
@@ -33,7 +32,6 @@ model Users {
   @@index([username, role, whatsapp], name: "users_username_role_whatsapp_idx")
   @@map("users")
 }
-
 model Account {
   id                String    @id @default(cuid())
   userId            Int
@@ -82,4 +80,66 @@ model VerificationToken {
   @@unique([identifier, token], name: "verification_token_identifier_token_unique")
   @@index([username], name: "verification_token_username_idx")
   @@map("verification_tokens")
+}
+model Categories {
+  id            Int       @id @default(autoincrement()) @map("id")
+  nama          String    @map("nama")
+  subNama       String    @map("sub_nama")
+  brand         String    @db.Text @map("brand")
+  kode          String?   @unique @map("kode")
+  serverId      Int       @default(0) @map("server_id")
+  status        String    @default("active") @map("status")
+  thumbnail     String    @map("thumbnail")
+  tipe          String    @default("game") @map("tipe")
+  petunjuk      String?   @map("petunjuk")
+  ketLayanan    String?   @db.Text @map("ket_layanan")
+  ketId         String?   @db.Text @map("ket_id")
+  placeholder1  String    @db.Text @map("placeholder_1")
+  placeholder2  String    @db.Text @map("placeholder_2")
+  createdAt     DateTime? @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+  bannerLayanan String    @map("bannerlayanan")
+  
+  subCategories SubCategory[]
+
+  @@index([tipe, status])
+  @@map("kategoris")
+}
+
+
+model SubCategory {
+  id           Int       @id @default(autoincrement()) @map("id")
+  categoryId   Int       @map("category_id")
+  code         String    @map("code")
+  name         String    @map("name")
+  active       Boolean   @map("active")
+  createdAt    DateTime? @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+  
+  category     Categories @relation(fields: [categoryId], references: [id])
+
+  @@index([code, categoryId, active])
+  @@index([categoryId])
+  @@map("sub_categories")
+}
+model Method {
+  id          Int       @id @default(autoincrement()) @map("id")
+  name        String    @db.VarChar(55) @map("name")
+  images      String    @db.VarChar(250) @map("images")
+  code        String    @db.VarChar(100) @map("code")
+  keterangan  String    @db.VarChar(250) @map("keterangan")
+  tipe        String    @db.VarChar(225) @map("tipe")
+  min         Int?
+  isActive    Boolean   @default(true)
+  typeTax     String?   @map("type_tax")
+  taxAdmin    Int?      @map("tax_admin")
+  minExpired  Int?      @default(0) @map("min_expired")
+  maxExpired  Int?      @default(0) @map("max_expired")
+  max         Int?
+  createdAt   DateTime? @default(now()) @map("created_at")
+  updatedAt   DateTime? @updatedAt @map("updated_at")
+  
+
+  @@index([code])
+  @@map("methods")
 }
