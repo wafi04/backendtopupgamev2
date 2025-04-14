@@ -5,17 +5,15 @@ import { ApiError } from '@/common/utils/apiError';
 import { ERROR_CODES } from '@/common/constants/error';
 import { sendResponse } from '@/common/utils/response';
 import { ConfigEnv } from '@/config/env';
-import { GenerateUniqueString } from '@/common/utils/generate';
 
-// Ambil konfigurasi JWT dari environment
 const config = ConfigEnv();
 
 export interface AuthContext {
   userId: number;
   username: string;
   role: string;
-    emailVerified: boolean;
-    sessionId : string
+  emailVerified: boolean;
+  sessionId : string
   iat?: number;
   exp?: number;
 }
@@ -47,11 +45,7 @@ export class AuthContextManager {
         
       // Verifikasi dan decode token JWT
       const decoded = jwt.verify(token, this.jwtSecret) as AuthContext;
-      // Opsional: Verifikasi session di database jika diperlukan
-      // Ini bisa digunakan untuk "blacklist" token atau mencabut token
-      // sebelum waktu kedaluwarsa
-    //   await this.sessionRepo.getSession(token);
-      
+    
       return {
         userId: decoded.userId,
         username: decoded.username,
@@ -151,8 +145,7 @@ export class AuthContextManager {
         const currentTime = Math.floor(Date.now() / 1000);
         const tokenExpiry = decoded.exp || 0;
         
-        // Jika token expired tidak lebih dari 7 hari (contoh), masih bisa refresh
-        const refreshWindow = 7 * 24 * 60 * 60; // 7 hari dalam detik
+        const refreshWindow = 7 * 24 * 60 * 60; 
         
         if (currentTime - tokenExpiry <= refreshWindow) {
           return this.generateTokenWithContext({
@@ -188,51 +181,28 @@ export class ContextAwareMiddleware {
   
   static roleMiddleware(roles: string[]) {
     return async (req: Request, res: Response, next: NextFunction) => {
-      const authContext = (req as any).authContext as AuthContext;
+      const token = req.cookies.session_token;
       
-      if (!authContext) {
+      if (!token) {
         return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
       }
-      
-      if (!roles.includes(authContext.role)) {
-        return sendResponse(res, null, ERROR_CODES.FORBIDDEN, 403);
+
+      try {
+        await AuthContextManager.attachContextToRequest(req, token);
+        const authContext = (req as RequestAuthContext).authContext;
+
+        if (!authContext) {
+          return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
+        }
+        
+        if (!roles.includes(authContext.role)) {
+          return sendResponse(res, null, ERROR_CODES.FORBIDDEN, 403);
+        }
+        
+        next();
+      } catch (error) {
+        return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
       }
-      
-      next();
     };
   }
-  
-//   static permissionMiddleware(permissions: string[]) {
-//     return async (req: Request, res: Response, next: NextFunction) => {
-//       const authContext = (req as any).authContext as AuthContext;
-      
-//       if (!authContext) {
-//         return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
-//       }
-      
-//       // Implementasi pemeriksaan permission - butuh informasi tambahan dalam token
-//       // atau query database berdasarkan userId dan permission
-//       // Ini contoh sederhana, implementasi nyata mungkin berbeda
-//     //   const userPermissions = await getUserPermissions(authContext.userId);
-      
-//       const hasAllPermissions = permissions.every(
-//         permission => userPermissions.includes(permission)
-//       );
-      
-//       if (!hasAllPermissions) {
-//         return sendResponse(res, null, ERROR_CODES.FORBIDDEN, 403);
-//       }
-      
-//       next();
-//     };
-//   }
 }
-
-// // Fungsi helper untuk mendapatkan permission user
-// // Implementasi tergantung pada struktur database Anda
-// async function getUserPermissions(username : string): Promise<string[]> {
-//   // Contoh implementasi - ganti dengan logika sesuai aplikasi Anda
-//   const userRepo = new UserRepository(); // Anda perlu membuat repository ini
-//   const user = await userRepo.getUserByUsername(username);
-//   return user?.permissions || [];
-// }

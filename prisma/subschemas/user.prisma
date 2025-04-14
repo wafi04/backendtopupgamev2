@@ -1,0 +1,24 @@
+model Users {
+  id             Int                 @id @default(autoincrement())
+  name           String              @db.VarChar(100)
+  username       String              @unique @db.VarChar(50)
+  password       String              @db.VarChar(255)
+  whatsapp       String?             @db.VarChar(20)
+  balance        Int                 @default(0)
+  role           String              @db.VarChar(20) @default("Member")
+  apiKey         String?             @unique @db.VarChar(64) @map("api_key")
+  isDeleted      Boolean             @default(false) @map("is_deleted")
+  deletedAt      DateTime?           @map("deleted_at")
+  isEmailVerified  Boolean          @default(false)
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  tokenVerification VerificationToken[]
+  accounts       Account[]
+  sessions       Session[]
+
+  @@index([username, balance], name: "users_username_balance_idx")
+  @@index([role, balance], name: "users_role_balance_idx")
+  @@index([whatsapp], name: "users_whatsapp_idx")
+  @@index([username, role, whatsapp], name: "users_username_role_whatsapp_idx")
+  @@map("users")
+}

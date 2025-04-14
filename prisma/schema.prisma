@@ -5,9 +5,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") 
   relationMode = "prisma"
 }
+<<<<<<< HEAD
 model Users {
   id             Int                 @id @default(autoincrement())
   name           String              @db.VarChar(100)
@@ -32,6 +33,9 @@ model Users {
   @@index([username, role, whatsapp], name: "users_username_role_whatsapp_idx")
   @@map("users")
 }
+=======
+
+>>>>>>> 317e9768c570bf0925ac697fbf8b36c76e427131
 model Account {
   id                String    @id @default(cuid())
   userId            Int
@@ -106,7 +110,10 @@ model Categories {
   @@map("kategoris")
 }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 317e9768c570bf0925ac697fbf8b36c76e427131
 model SubCategory {
   id           Int       @id @default(autoincrement()) @map("id")
   categoryId   Int       @map("category_id")
@@ -122,6 +129,10 @@ model SubCategory {
   @@index([categoryId])
   @@map("sub_categories")
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 317e9768c570bf0925ac697fbf8b36c76e427131
 model Method {
   id          Int       @id @default(autoincrement()) @map("id")
   name        String    @db.VarChar(55) @map("name")
@@ -142,4 +153,32 @@ model Method {
 
   @@index([code])
   @@map("methods")
+<<<<<<< HEAD
 }
+=======
+}
+model Users {
+  id             Int                 @id @default(autoincrement())
+  name           String              @db.VarChar(100)
+  username       String              @unique @db.VarChar(50)
+  password       String              @db.VarChar(255)
+  whatsapp       String?             @db.VarChar(20)
+  balance        Int                 @default(0)
+  role           String              @db.VarChar(20) @default("Member")
+  apiKey         String?             @unique @db.VarChar(64) @map("api_key")
+  isDeleted      Boolean             @default(false) @map("is_deleted")
+  deletedAt      DateTime?           @map("deleted_at")
+  isEmailVerified  Boolean          @default(false)
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  tokenVerification VerificationToken[]
+  accounts       Account[]
+  sessions       Session[]
+
+  @@index([username, balance], name: "users_username_balance_idx")
+  @@index([role, balance], name: "users_role_balance_idx")
+  @@index([whatsapp], name: "users_whatsapp_idx")
+  @@index([username, role, whatsapp], name: "users_username_role_whatsapp_idx")
+  @@map("users")
+}
+>>>>>>> 317e9768c570bf0925ac697fbf8b36c76e427131

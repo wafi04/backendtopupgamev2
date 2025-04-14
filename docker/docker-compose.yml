@@ -58,13 +58,13 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/pg-data/prod  
+      device: ./pg-data/prod  
   pgdev_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/pg-data/dev
+      device: ./pg-data/dev
 
 networks:
   backend-network:

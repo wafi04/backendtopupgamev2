@@ -2,10 +2,8 @@ import { Router, Request, Response, NextFunction } from "express";
 import { AuthService } from "../service/auth-service";
 import { UserRepository } from "../repository/user-repository";
 import { sendResponse } from "@/common/utils/response";
-import { APP_DOMAIN } from "@/common/constants";
 import { AuthContextManager, ContextAwareMiddleware, RequestAuthContext } from "@/middleware/middleware-auth";
 import { ERROR_CODES } from "@/common/constants/error";
-import { config } from "dotenv";
 import { ConfigEnv } from "@/config/env";
 
 // Inisialisasi repositories dan service
@@ -32,8 +30,7 @@ authRoutes.post("/register", asyncHandler(async (req: Request, res: Response) =>
   sendResponse(res,user,"User created Successfully",201)
 }));
 
-// Route untuk login
-  authRoutes.post("/login", asyncHandler(async (req: Request, res: Response) => {
+authRoutes.post("/login", asyncHandler(async (req: Request, res: Response) => {
     const { username, password } = req.body;
     
     const requestInfo = {
@@ -74,7 +71,6 @@ authRoutes.post('/logout', ContextAwareMiddleware.authMiddleware,asyncHandler( a
     if (token) {
       await authService.logout(token);
     }
-    
     sendResponse(res,null,"Logout Successfully",201)
   } catch (error) {
     next(error);
