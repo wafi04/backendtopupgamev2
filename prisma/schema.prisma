@@ -83,7 +83,6 @@ model Categories {
   @@map("kategoris")
 }
 
-
 model SubCategory {
   id           Int       @id @default(autoincrement()) @map("id")
   categoryId   Int       @map("category_id")
@@ -99,6 +98,7 @@ model SubCategory {
   @@index([categoryId])
   @@map("sub_categories")
 }
+
 model Method {
   id          Int       @id @default(autoincrement()) @map("id")
   name        String    @db.VarChar(55) @map("name")

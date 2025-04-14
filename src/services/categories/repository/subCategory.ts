@@ -75,6 +75,7 @@ export class SubCategoryRepositories {
                 where.categoryId = req.categoryId
             }
 
+            
 
             const page = req.page || 1
             const limit = req.limit || 10

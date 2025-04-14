@@ -19,11 +19,15 @@ export interface MethodsData extends CreateMethod {
 }
 
 export type UpdateMethods = Partial<CreateMethod>
-export type DeleteMthods = {
+export type DeleteMethods = {
     id : number
 }
 export type FilterMethod = {
+    isAll : string
     code? : string
     isActive? : boolean
+    page? : number
+    limit? : number
+    type? : string
 }
 
