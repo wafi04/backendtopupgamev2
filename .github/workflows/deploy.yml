@@ -53,7 +53,6 @@ jobs:
         run: |
           scp -r docker/ dist/ package.json package-lock.json prisma/ vazzuniverse@103.127.98.128:~/backend/
           ssh vazzuniverse@103.127.98.128 "cd ~/backend && \
-          mkdir -p docker/pg-data/dev docker/pg-data/prod && \
           [[ -d \$HOME/.nvm ]] && export NVM_DIR=\$HOME/.nvm && [ -s \$NVM_DIR/nvm.sh ] && \. \$NVM_DIR/nvm.sh; \
           npm ci --only=production && \
           npx prisma generate && \

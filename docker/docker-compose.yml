@@ -28,27 +28,46 @@ services:
         max-size: 10m
         max-file: 3
 
-  db_development:
-    image: postgres:15-alpine
-    container_name: db_dev
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: devuser
-      POSTGRES_PASSWORD: devpass
-      POSTGRES_DB: myapp_dev
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
-    volumes:
-      - pgdev_data:/var/lib/postgresql/data
-      - ./init-scripts/dev-init.sql:/docker-entrypoint-initdb.d/init.sql
+  # db_development:
+  #   image: postgres:15-alpine
+  #   container_name: db_dev
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: devuser
+  #     POSTGRES_PASSWORD: devpass
+  #     POSTGRES_DB: myapp_dev
+  #     POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+  #   volumes:
+  #     - pgdev_data:/var/lib/postgresql/data
+  #     - ./init-scripts/dev-init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   ports:
+  #     - "5433:5432"
+  #   networks:
+  #     - backend-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U devuser -d myapp_dev"]
+  #     interval: 15s
+  #     timeout: 5s
+  #     retries: 3
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.prod
+    container_name: backend_topup
     ports:
-      - "5433:5432"
-    networks:
-      - backend-network
+      - "4000:4000"
+    depends_on:
+      - db_production
+    env_file:
+      - ../.env.local
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U devuser -d myapp_dev"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+      test: ["CMD", "wget", "-q", "--spider", "http://103:4000/health"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s   
+    
 
 volumes:
   postgres_data:

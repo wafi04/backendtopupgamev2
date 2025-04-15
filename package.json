@@ -11,11 +11,16 @@
     "jsonwebtoken": "^9.0.2",
     "supertest": "^7.1.0"
   },
+  "_moduleAliases": {
+  "@": "dist"
+},
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "build": "tsc",
-    "start": "node dist/app.js",
+  
+  "postinstall": "ts-patch install",
+  "build": "tsc -p tsconfig.json",
+"start:prod": "node -r tsconfig-paths/register -r module-alias/register --require=./tsconfig-paths.config.js dist/app.js",
     "migrate": "npx dotenv-cli -e .env.local -- npx prisma migrate dev",
     "dev": "nodemon --exec \"npx ts-node -r tsconfig-paths/register\" src/app.ts"
   },
@@ -33,6 +38,8 @@
     "prisma": "^6.6.0",
     "ts-jest": "^29.3.2",
     "ts-node": "^10.9.2",
+    "ts-patch": "^3.3.0",
+    "ts-transform-paths": "^3.0.0",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   }
