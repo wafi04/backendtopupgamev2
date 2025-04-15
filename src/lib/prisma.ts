@@ -3,7 +3,7 @@ import { ConfigEnv } from '@/config/env';
 import { PrismaClient } from '@prisma/client';
 
 // Ambil environment dari process.env.NODE_ENV atau default 'development'
-const environment = (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test';
+const environment = ("production") as 'development' | 'production' | 'test';
 
 
 const config = ConfigEnv(environment);

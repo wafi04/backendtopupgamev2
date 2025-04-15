@@ -13,7 +13,6 @@ export class VerificationTokenRepository {
         case 'P2025':
           throw new ApiError(404, ERROR_CODES.NOT_FOUND, "Verification token not found");
         default:
-          console.error('Prisma error:', error);
           throw new ApiError(500, ERROR_CODES.INTERNAL_SERVER_ERROR, "Database operation failed");
       }
     }

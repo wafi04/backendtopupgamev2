@@ -1,4 +1,3 @@
-import { error } from "console";
 import { ERROR_CODES } from "../../../common/constants/error";
 import { CreateUser, UpdateUser, UserData } from "../../../common/interfaces/user";
 import { ApiError } from "../../../common/utils/apiError";
@@ -92,7 +91,7 @@ export class UserRepository {
             }
         })
     } catch (error) {
-        
+      this.handlePrismaError(error);
     }
   }
   

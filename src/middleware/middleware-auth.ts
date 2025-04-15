@@ -6,7 +6,7 @@ import { ERROR_CODES } from '@/common/constants/error';
 import { sendResponse } from '@/common/utils/response';
 import { ConfigEnv } from '@/config/env';
 
-const config = ConfigEnv();
+const config = ConfigEnv("production");
 
 export interface AuthContext {
   userId: number;
@@ -151,7 +151,7 @@ export class AuthContextManager {
           return this.generateTokenWithContext({
             userId: decoded.userId,
             username: decoded.username,
-              role: decoded.role,
+            role: decoded.role,
             sessionId : decoded.sessionId,
             emailVerified: decoded.emailVerified
           });

@@ -19,7 +19,6 @@ export class SessionRepository {
     } else if (error instanceof ApiError) {
       throw error;
     } else {
-      console.error('Unexpected error:', error);
       throw new ApiError(500, ERROR_CODES.INTERNAL_SERVER_ERROR, "Unexpected server error");
     }
   }
