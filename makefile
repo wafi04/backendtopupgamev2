@@ -6,3 +6,6 @@ docker-down:
 
 docker-build:
 	cd docker && docker compose build
+
+build:
+	npm run build
