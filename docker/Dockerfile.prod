@@ -9,6 +9,8 @@ COPY .env.production ./
 
 # Install ts-patch explicitly first, then run npm ci
 RUN npm install ts-patch --save-dev && npm ci
+RUN npm install module-alias --save
+
 
 # Copy source code
 COPY . .
@@ -40,7 +42,9 @@ module.exports = { \
 }' > tsconfig-paths.config.js
 
 # Important: First install with --production=false to ensure all deps are installed
+RUN npm install module-alias --production --save
 RUN npm install --production=false
+
 
 # Copy built app and node_modules from builder
 COPY --from=builder /app/dist ./dist

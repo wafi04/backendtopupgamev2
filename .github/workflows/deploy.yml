@@ -31,7 +31,7 @@ jobs:
           
       - name: Copy Docker files and project files
         run: |
-          scp -r docker/ prisma/ package*.json tsconfig.json .env.production src/ vazzuniverse@103.127.98.128:~/backend/
+          scp -r docker/ prisma/ package*.json tsconfig.json .tsconfig-paths.config.json .env.production src/ vazzuniverse@103.127.98.128:~/backend/
           
       - name: Deploy to VPS with Docker
         run: |
