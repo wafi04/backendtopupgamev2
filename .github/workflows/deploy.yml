@@ -14,42 +14,34 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-            
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-              
-      - name: Install dependencies
-        run: npm ci
-
+        
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      
+          
       - name: Add host key to known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H 103.127.98.128 >> ~/.ssh/known_hosts
-      
-      - name: Check Node.js version and update if needed
+          
+      - name: Setup remote directory structure
         run: |
-          NODE_VERSION=$(ssh vazzuniverse@103.127.98.128 "node -v || echo 'not installed'")
-          echo "Current Node.js version: $NODE_VERSION"
-          if [[ $NODE_VERSION != *"v18"* && $NODE_VERSION != *"v19"* && $NODE_VERSION != *"v20"* ]]; then
-            echo "Node.js 18+ not detected, installing Node.js 20 with NVM"
-            ssh vazzuniverse@103.127.98.128 "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && export NVM_DIR=\$HOME/.nvm && [ -s \$NVM_DIR/nvm.sh ] && \. \$NVM_DIR/nvm.sh && nvm install 20 && nvm use 20 && nvm alias default 20"
-          else
-            echo "Node.js version is compatible, skipping installation"
-          fi
-
-      - name: Deploy to VPS
+          ssh vazzuniverse@103.127.98.128 "mkdir -p ~/backend/pg-data/prod"
+          
+      - name: Copy Docker files and project files
         run: |
-          scp -r docker/ dist/ package.json package-lock.json prisma/ vazzuniverse@103.127.98.128:~/backend/
+          scp -r docker/ prisma/ package*.json tsconfig.json .env.local src/ vazzuniverse@103.127.98.128:~/backend/
+          
+      - name: Deploy to VPS with Docker
+        run: |
           ssh vazzuniverse@103.127.98.128 "cd ~/backend && \
-          [[ -d \$HOME/.nvm ]] && export NVM_DIR=\$HOME/.nvm && [ -s \$NVM_DIR/nvm.sh ] && \. \$NVM_DIR/nvm.sh; \
-          npm ci --only=production && \
-          npx prisma generate && \
-          cd docker && docker compose up -d"
+            cd docker && \
+            docker compose down || true && \
+            docker compose up -d --build"
+            
+      - name: Verify deployment
+        run: |
+          ssh vazzuniverse@103.127.98.128 "docker ps | grep backend_topup && \
+            echo 'Backend deployed successfully!' || \
+            echo 'Backend deployment failed!'"
