@@ -1,0 +1,50 @@
+name: Backend Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+            
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+              
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+
+      - name: Build for production
+        run: npm run build
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Add host key to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 103.127.98.128 >> ~/.ssh/known_hosts
+      
+      - name: Deploy to VPS
+        run: |
+          scp -r docker/ dist/ package.json package-lock.json prisma/ vazzuniverse@103.127.98.128:~/backend/
+          ssh vazzuniverse@103.127.98.128 "cd ~/backend && \
+          mkdir -p docker/pg-data/dev docker/pg-data/prod && \
+          npm ci --only=production && \
+          npx prisma generate && \
+          cd docker && docker compose up -d"
