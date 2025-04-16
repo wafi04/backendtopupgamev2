@@ -145,11 +145,10 @@ if [ "$HEALTH_CHECK_SUCCESS" = false ]; then
   exit 1
 fi
 
-# Create Nginx configuration file
 cat > ~/backend/nginx-backend.conf << EOF
 server {
     listen 80;
-    server_name api.yourdomain.com; # Replace with your actual domain
+    server_name api.vazzuniverse.id;
 
     location / {
         proxy_pass http://localhost:$NEW_APP_PORT;
@@ -197,11 +196,11 @@ elif [ "$NEW_ENV" = "green" ]; then
   if docker ps | grep -q "backend_blue"; then
     echo "Stopping blue environment"
     cd ~/backend/docker
-    docker-compose -f docker-compose.blue.yml down
+    docker compose -f docker-compose.blue.yml down
   elif docker ps | grep -q "backend_topup"; then
     echo "Stopping production environment"
     cd ~/backend/docker
-    docker-compose down || true
+    docker compose down || true
   fi
 fi
 
