@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# Configuration
 BLUE_APP_PORT=4001
 GREEN_APP_PORT=4002
 PRODUCTION_APP_PORT=4000
@@ -8,10 +9,13 @@ BLUE_DB_PORT=5433
 GREEN_DB_PORT=5434
 PRODUCTION_DB_PORT=5432
 
+# Debug: List running containers
 echo "Currently running containers:"
 docker ps
 
+# Determine which environment to deploy to
 if docker ps | grep -q "backend_topup"; then
+  # Production is running, deploy to blue
   NEW_ENV="blue"
   NEW_APP_PORT=$BLUE_APP_PORT
   NEW_DB_PORT=$BLUE_DB_PORT
@@ -91,7 +95,7 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://vazzuniverse:vazzuniverse@db_$NEW_ENV:5432/vazzuniverse?schema=public
     env_file:
-      - .env.production
+      - ../.env.production
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:4000/health"]
       interval: 30s
@@ -155,6 +159,7 @@ server {
         proxy_cache_bypass \$http_upgrade;
     }
     
+    # WebSocket support if needed
     location /socket.io/ {
         proxy_pass http://localhost:$NEW_APP_PORT;
         proxy_http_version 1.1;
