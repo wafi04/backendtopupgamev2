@@ -1,0 +1,62 @@
+name: Backend Zero-Downtime Deployment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: Add host key to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 103.127.98.128 >> ~/.ssh/known_hosts
+          
+      - name: Setup remote directory structure
+        run: |
+          ssh vazzuniverse@103.127.98.128 "mkdir -p ~/backend/pg-data/prod ~/backend/pg-data/blue ~/backend/pg-data/green ~/backend/docker/init-scripts"
+          
+      - name: Copy Docker files and project files
+        run: |
+          scp -r docker/ prisma/ package*.json tsconfig.json .dockerignore deploy.sh .env.production src/ vazzuniverse@103.127.98.128:~/backend/
+          
+      - name: Create deployment scripts on remote server
+        run: |
+          ssh vazzuniverse@103.127.98.128 "cat > ~/backend/deploy.sh" < ./deploy.sh
+          
+      - name: Make deployment script executable
+        run: |
+          ssh vazzuniverse@103.127.98.128 "chmod +x ~/backend/deploy.sh"
+          
+      - name: Install Nginx if not already installed
+        run: |
+          ssh vazzuniverse@103.127.98.128 "if ! command -v nginx &> /dev/null; then sudo apt-get update && sudo apt-get install -y nginx; fi"
+          
+      - name: Ensure Nginx directories exist with proper permissions
+        run: |
+          ssh vazzuniverse@103.127.98.128 "sudo mkdir -p /etc/nginx/conf.d || true"
+          
+      - name: Copy init SQL script if exists
+        run: |
+          scp -r init-scripts/* vazzuniverse@103.127.98.128:~/backend/docker/init-scripts/ || echo "No init scripts to copy"
+          
+      - name: Execute zero-downtime deployment
+        run: |
+          ssh vazzuniverse@103.127.98.128 "cd ~/backend && bash ./deploy.sh"
+          
+      - name: Verify deployment
+        run: |
+          ssh vazzuniverse@103.127.98.128 "if docker ps | grep -q 'backend_\\(blue\\|green\\|topup\\)'; then echo 'Backend deployed successfully!'; else echo 'Backend deployment failed!' && exit 1; fi"

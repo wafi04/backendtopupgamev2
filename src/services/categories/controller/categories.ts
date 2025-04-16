@@ -3,7 +3,7 @@ import { Request, Response, Router, RequestHandler, NextFunction } from "express
 import { CategoriesRepository } from "../repository/categories";
 import { ContextAwareMiddleware } from "@/middleware/middleware-auth";
 
-import { ADMIN_ROLE, MEMBER_ROLE } from "@/common/interfaces/user";
+import { ADMIN_ROLE } from "@/common/interfaces/user";
 import { sendResponse } from "@/common/utils/response";
 
 const CategoriesRoute: Router = Router()

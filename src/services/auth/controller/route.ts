@@ -42,7 +42,7 @@ authRoutes.post("/login", asyncHandler(async (req: Request, res: Response) => {
     
     res.cookie('session_token', result.token, {
       httpOnly: true,
-      domain : ConfigEnv("development").APP_DOMAIN,
+      domain : ConfigEnv("production").APP_DOMAIN,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 1 * 24 * 60 * 60 * 1000

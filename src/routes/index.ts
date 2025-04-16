@@ -7,7 +7,7 @@ import { subCategoriesController } from '@/services/categories/controller/subCat
 const router: Router = Router();
 
 router.get('/', (req: Request, res: Response) => {
-    res.send('Express + TypeScript Server Is Running!');
+    res.send('Diubah!');
 });
 
 router.get('/health', getHealth);

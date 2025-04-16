@@ -3,7 +3,7 @@ import { SessionRepository } from "../repository/session-repository";
 import { UserRepository } from "../repository/user-repository";
 import { ApiError } from "@/common/utils/apiError";
 import { ERROR_CODES } from "@/common/constants/error";
-import { GenerateId, generateSessionToken, GenerateUniqueString } from "@/common/utils/generate";
+import { GenerateId } from "@/common/utils/generate";
 import { HashingPassword, VerifyPassword } from "../repository/helpers";
 import { AuthContextManager } from "@/middleware/middleware-auth";
 
@@ -43,7 +43,6 @@ export class AuthService {
         throw new ApiError(401, ERROR_CODES.UNAUTHORIZED, "Username atau password tidak valid");
       }
       const sessionId = GenerateId("SESS")
-      console.log(sessionId)
       
       // Buat JWT token dengan context
       const token = await this.authContextManager.createSessionWithContext(
@@ -81,10 +80,7 @@ export class AuthService {
   
   async logout(token: string): Promise<void> {
     try {
-      // Implementasi logout - jika Anda menyimpan token di database
-      // Anda bisa mencatatnya sebagai "revoked" atau menghapusnya
-      
-      // Contoh implementasi dengan SessionRepository
+     
       const sessionRepo = new SessionRepository();
       await sessionRepo.revokeSession(token);
     } catch (error) {
