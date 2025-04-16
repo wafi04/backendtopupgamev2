@@ -48,6 +48,12 @@ fi
 
 echo "Deploying to $NEW_ENV environment"
 
+cat > ~/backend/.dockerignore << EOF
+pg-data/
+node_modules/
+npm-debug.log
+EOF
+
 # Create environment-specific docker-compose file
 cat > ~/backend/docker/docker-compose.$NEW_ENV.yml << EOF
 version: '3'
