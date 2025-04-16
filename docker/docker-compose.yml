@@ -27,27 +27,27 @@ services:
         max-size: 10m
         max-file: 3
 
-  backend:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.prod
-    container_name: backend_topup
-    ports:
-      - "4000:4000"
-    depends_on:
-      - db_production
-    networks:
-      - backend-network
-    environment:
-      - NODE_ENV=production
-    env_file:
-      - ../.env.production
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:4000/health"]
-      interval: 1m30s
-      timeout: 30s
-      retries: 5
-      start_period: 30s   
+  # backend:
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile.prod
+  #   container_name: backend_topup
+  #   ports:
+  #     - "4000:4000"
+  #   depends_on:
+  #     - db_production
+  #   networks:
+  #     - backend-network
+  #   environment:
+  #     - NODE_ENV=production
+  #   env_file:
+  #     - ../.env.production
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:4000/health"]
+  #     interval: 1m30s
+  #     timeout: 30s
+  #     retries: 5
+  #     start_period: 30s   
     
 
 volumes:

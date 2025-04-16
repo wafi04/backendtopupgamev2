@@ -10,22 +10,28 @@ datasource db {
 }
 
 model Users {
-  id             Int                 @id @default(autoincrement())
-  name           String              @db.VarChar(100)
-  username       String              @unique @db.VarChar(50)
-  password       String              @db.VarChar(255)
-  whatsapp       String?             @db.VarChar(20)
-  balance        Int                 @default(0)
-  role           String              @db.VarChar(20) @default("Member")
-  apiKey         String?             @unique @db.VarChar(64) @map("api_key")
-  isDeleted      Boolean             @default(false) @map("is_deleted")
-  deletedAt      DateTime?           @map("deleted_at")
-  isEmailVerified  Boolean          @default(false)
-  createdAt      DateTime            @default(now()) @map("created_at")
-  updatedAt      DateTime            @updatedAt @map("updated_at")
+  id               Int                @id @default(autoincrement())
+  name             String             @db.VarChar(100)
+  username         String             @unique @db.VarChar(50)
+  password         String             @db.VarChar(255)
+  email            String?            @unique @db.VarChar(100)
+  whatsapp         String?            @db.VarChar(20)
+  balance          Int                @default(0)
+  role             String             @db.VarChar(20) @default("Member")
+  apiKey           String?            @unique @db.VarChar(64) @map("api_key")
+  isDeleted        Boolean            @default(false) @map("is_deleted")
+  deletedAt        DateTime?          @map("deleted_at")
+  isEmailVerified  Boolean            @default(false)
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  
+  // Relations
   tokenVerification VerificationToken[]
-  accounts       Account[]
-  sessions       Session[]
+  accounts          Account[]
+  sessions          Session[]
+  transactions      Transaction[]
+  memberships       Membership[]
+  cart              Cart[]
 
   @@index([username, balance], name: "users_username_balance_idx")
   @@index([role, balance], name: "users_role_balance_idx")
@@ -37,7 +43,6 @@ model Users {
 model Account {
   id                String    @id @default(cuid())
   userId            Int
-  user              Users     @relation(fields: [userId], references: [id])
   type              String    @db.VarChar(20)
   provider          String    @db.VarChar(50)
   providerAccountId String    @map("provider_account_id") @db.VarChar(100)
@@ -49,6 +54,9 @@ model Account {
   idToken           String?   @db.Text @map("id_token")
   sessionState      String?   @map("session_state") @db.VarChar(100)
   createdAt         DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  user              Users     @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId], name: "account_provider_unique")
   @@index([userId], name: "account_user_id_idx")
@@ -59,11 +67,13 @@ model Session {
   id           String    @id @default(cuid())
   sessionToken String    @unique @map("session_token") @db.Text()
   userId       Int
-  user         Users     @relation(fields: [userId], references: [id])
   expires      DateTime
   ipAddress    String?   @map("ip_address") @db.VarChar(45)
   userAgent    String?   @db.Text @map("user_agent")
   createdAt    DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  user         Users     @relation(fields: [userId], references: [id])
 
   @@index([userId], name: "session_user_id_idx")
   @@map("sessions")
@@ -76,48 +86,55 @@ model VerificationToken {
   type       String    @db.VarChar(100)
   otp        String?   @db.VarChar(6)
   username   String    @db.VarChar(50)
-  user       Users     @relation(fields: [username], references: [username])
   createdAt  DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  user       Users     @relation(fields: [username], references: [username])
 
   @@unique([identifier, token], name: "verification_token_identifier_token_unique")
   @@index([username], name: "verification_token_username_idx")
   @@map("verification_tokens")
 }
+
 model Categories {
-  id            Int       @id @default(autoincrement()) @map("id")
-  nama          String    @map("nama")
-  subNama       String    @map("sub_nama")
-  brand         String    @db.Text @map("brand")
-  kode          String?   @unique @map("kode")
-  serverId      Int       @default(0) @map("server_id")
-  status        String    @default("active") @map("status")
-  thumbnail     String    @map("thumbnail")
-  tipe          String    @default("game") @map("tipe")
-  petunjuk      String?   @map("petunjuk")
-  ketLayanan    String?   @db.Text @map("ket_layanan")
-  ketId         String?   @db.Text @map("ket_id")
-  placeholder1  String    @db.Text @map("placeholder_1")
-  placeholder2  String    @db.Text @map("placeholder_2")
-  createdAt     DateTime? @default(now()) @map("created_at")
-  updatedAt     DateTime? @updatedAt @map("updated_at")
-  bannerLayanan String    @map("bannerlayanan")
+  id            Int           @id @default(autoincrement())
+  nama          String
+  subNama       String        @map("sub_nama")
+  brand         String        @db.Text @map("brand")
+  kode          String?       @unique @map("kode")
+  serverId      Int           @default(0) @map("server_id")
+  status        String        @default("active") @map("status")
+  thumbnail     String        @map("thumbnail")
+  tipe          String        @default("game") @map("tipe")
+  petunjuk      String?       @map("petunjuk")
+  ketLayanan    String?       @db.Text @map("ket_layanan")
+  ketId         String?       @db.Text @map("ket_id")
+  placeholder1  String        @db.Text @map("placeholder_1")
+  placeholder2  String        @db.Text @map("placeholder_2")
+  bannerLayanan String        @map("bannerlayanan")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
   
+  // Relations
   subCategories SubCategory[]
+  layanan       Layanan[]
 
   @@index([tipe, status])
   @@map("kategoris")
 }
 
 model SubCategory {
-  id           Int       @id @default(autoincrement()) @map("id")
-  categoryId   Int       @map("category_id")
-  code         String    @map("code")
-  name         String    @map("name")
-  active       Boolean   @map("active")
-  createdAt    DateTime? @default(now()) @map("created_at")
-  updatedAt    DateTime? @updatedAt @map("updated_at")
+  id         Int        @id @default(autoincrement())
+  categoryId Int        @map("category_id")
+  code       String     @map("code")
+  name       String     @map("name")
+  active     Boolean    @map("active")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
   
-  category     Categories @relation(fields: [categoryId], references: [id])
+  // Relations
+  category   Categories @relation(fields: [categoryId], references: [id])
+  layanan    Layanan[]
 
   @@index([code, categoryId, active])
   @@index([categoryId])
@@ -125,26 +142,250 @@ model SubCategory {
 }
 
 model Method {
-  id          Int       @id @default(autoincrement()) @map("id")
-  name        String    @db.VarChar(55) @map("name")
-  images      String    @db.VarChar(250) @map("images")
-  code        String    @db.VarChar(100) @map("code")
-  keterangan  String    @db.VarChar(250) @map("keterangan")
-  tipe        String    @db.VarChar(225) @map("tipe")
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(55)
+  images      String    @db.Text()
+  code        String    @db.VarChar(100)
+  keterangan  String    @db.VarChar(250)
+  tipe        String    @db.VarChar(225)
   min         Int?
-  isActive    Boolean   @default(true)
+  max         Int?
+  isActive    Boolean   @default(true) @map("is_active")
   typeTax     String?   @map("type_tax")
   taxAdmin    Int?      @map("tax_admin")
   minExpired  Int?      @default(0) @map("min_expired")
   maxExpired  Int?      @default(0) @map("max_expired")
-  max         Int?
-  createdAt   DateTime? @default(now()) @map("created_at")
-  updatedAt   DateTime? @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   
-
   @@index([code])
+  @@index([isActive])
+  @@index([isActive,code])
   @@map("methods")
-
 }
 
 
+
+model Layanan {
+  id                 Int          @id @default(autoincrement()) @map("id")
+  kategoriId         Int          @map("kategori_id")
+  detailsId          String?      @map("mongo_details_id") 
+  subCategoryId      Int          @default(0) @map("sub_category_id")
+  layanan            String       @map("layanan")
+  providerId         String       @map("provider_id")
+  harga              Int          @map("harga")
+  hargaReseller      Int          @map("harga_reseller")
+  hargaPlatinum      Int          @map("harga_platinum")
+  hargaGold          Int          @map("harga_gold")
+  hargaFlashSale     Int?         @default(0) @map("harga_flash_sale")
+  profit             Int          @map("profit")
+  profitReseller     Int          @map("profit_reseller")
+  profitPlatinum     Int          @map("profit_platinum")
+  profitGold         Int          @map("profit_gold")
+  isFlashSale        Boolean      @map("is_flash_sale")
+  judulFlashSale     String?      @db.VarChar(255) @map("judul_flash_sale") 
+  bannerFlashSale    String?      @db.VarChar(255) @map("banner_flash_sale") 
+  expiredFlashSale   DateTime?    @db.Date @map("expired_flash_sale")
+  catatan            String       @db.Text @map("catatan") 
+  status             Boolean      @map("status")
+  provider           String       @map("provider")
+  productLogo        String?      @map("product_logo")
+  isManualProcess    Boolean      @default(false) @map("is_manual_process")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  
+  // Relations
+  category           Categories   @relation(fields: [kategoriId], references: [id])
+  subCategory        SubCategory? @relation(fields: [subCategoryId], references: [id])
+  cartItems     CartItem[]
+  
+  @@index([kategoriId, status]) 
+  @@index([subCategoryId, status])
+  @@index([providerId, status])
+  @@index([isFlashSale, expiredFlashSale])
+  @@index([status, isFlashSale])
+  @@index([isManualProcess])
+  @@map("layanans")
+}
+
+model Cart {
+  id         Int        @id @default(autoincrement())
+  username   String     @map("username")
+  cartItems  CartItem[]
+  isCheckedOut Boolean  @default(false) @map("is_checked_out")
+
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  user  Users  @relation(fields: [username], references: [username])
+  @@index([username])
+
+}
+
+model CartItem {
+  id         Int       @id @default(autoincrement())
+  cartId     Int       @map("cart_id")
+  productId  Int?      @map("product_id")
+  layananId  Int?      @map("layanan_id")
+  quantity   Int       @default(1)
+  price      Int
+  
+  providerStatus    String?          @map("provider_status")
+  providerReference String?          @map("provider_reference")
+  providerData      Json?            @map("provider_data")
+  providerSn        String?          @map("provider_sn")
+  providerUpdatedAt DateTime?        @map("provider_updated_at")
+  
+  nickname          String?          @map("nickname")
+  gameId            String?          @map("game_id")
+  gameServer        String?          @map("game_server")
+  // Relations
+  cart       Cart      @relation(fields: [cartId], references: [id])
+  layanan    Layanan?  @relation(fields: [layananId], references: [id])
+
+  isManualProcess   Boolean          @default(false) @map("is_manual_process")
+  isProsesUlang     Boolean          @default(false) @map("is_proses_ulang")
+  isProsesManualAt  DateTime?        @map("is_proses_manual_at")
+  processedBy       String?          @map("processed_by")
+  metadata          Json?
+  providerId        String?
+  
+  transactionId Int?    @map("transaction_id")
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([isManualProcess])
+  @@index([cartId])
+  @@index([layananId])
+  @@index([transactionId])
+}
+
+model Transaction {
+  id                Int              @id @default(autoincrement())
+  transactionId           String           @unique @map("order_id")
+  username          String           @map("username")
+  amount            Int
+  type              String           @db.VarChar(30)
+  method            String
+  status            String           @default("PENDING")
+  description       String?          @db.Text
+  
+  // Payment data
+  paymentStatus     String?          @map("payment_status")
+  paymentReference  String?          @map("payment_reference")
+  paymentData       Json?            @map("payment_data")
+  paymentUpdatedAt  DateTime?        @map("payment_updated_at")
+  
+  // Transaction timestamps
+  createdAt         DateTime         @default(now()) @map("created_at")
+  updatedAt         DateTime         @updatedAt @map("updated_at")
+  completedAt       DateTime?        @map("completed_at")
+    
+  // Relations
+  user              Users            @relation(fields: [username], references: [username])
+  cartItems         CartItem[]       
+  pembayaran        Pembayaran?
+
+  @@index([username])
+  @@index([type])
+  @@index([status])
+  @@index([method])
+  @@index([paymentStatus])
+  @@index([transactionId])
+  
+  @@map("transactions")
+}
+
+model Pembayaran {
+  id             Int       @id @default(autoincrement()) @map("id")
+  transactionId        String    @unique @map("order_id")
+  harga          String    @map("harga")
+  noPembayaran   String?   @db.Text @map("no_pembayaran")
+  noPembeli      String    @map("no_pembeli")
+  status         String    @map("status")
+  metode         String    @map("metode")
+  reference      String?   @map("reference")
+  createdAt      DateTime? @default(now()) @map("created_at")
+  updatedAt      DateTime? @updatedAt @map("updated_at")
+  
+  // Add relationship to Transaction model
+  transaction    Transaction  @relation(fields: [transactionId], references: [transactionId])
+
+  @@index([metode])
+  @@index([transactionId])
+  @@index([status])
+  @@index([transactionId, metode, status])
+  @@map("pembayarans")
+}
+
+
+model Membership {
+  id            Int       @id @default(autoincrement())
+  username      String    @map("username")
+  planType      String    @map("plan_type") 
+  amount        Int
+  membeshipId       String    @map("membeship_id")
+  status        String    @default("PENDING")
+  startDate     DateTime? @map("start_date")
+  endDate       DateTime? @map("end_date")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  expiredAt     DateTime? @map("expired_at")
+  
+  users         Users     @relation(fields: [username], references: [username])
+
+  @@index([username])
+  @@index([status])
+  @@index([planType])
+  @@index([membeshipId])
+  @@map("memberships")
+}
+
+model MembershipBenefit {
+  id           Int      @id @default(autoincrement())
+  planType     String   @map("plan_type")
+  benefitName  String   @map("benefit_name")
+  description  String   @db.Text
+  value        String   
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([planType])
+  @@map("membership_benefits")
+}
+
+model ProsesManual {
+  id              Int       @id @default(autoincrement())
+  username        String    @map("username")
+  gameId          String    @map("game_id")
+  gameUsername    String    @map("game_username")
+  gameServer      String    @map("game_server")
+  orderId         String    @map("order_id")
+  status          String    @default("PENDING")
+  notes           String?   @db.Text
+  completedAt     DateTime? @map("completed_at")
+
+  createdBy       UserProsesManual @relation(fields: [username], references: [username])
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at") 
+
+  @@index([username])
+  @@index([orderId])
+  @@index([status])
+  @@map("proses_manual")
+}
+
+model UserProsesManual {
+  id            Int       @id @default(autoincrement())
+  username      String    @unique @map("username")
+  code          String    @map("code")
+  noted         String?   @map("noted")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  prosesManual  ProsesManual[]
+
+  @@map("user_proses_manual")
+}
