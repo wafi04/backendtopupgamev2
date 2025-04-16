@@ -45,8 +45,6 @@ if [ -z "$NEW_ENV" ]; then
   NEW_DB_PORT=$PRODUCTION_DB_PORT
 fi
 
-mkdir -p ~/backend/pg-data/$NEW_ENV
-chmod 775 ~/backend/pg-data/$NEW_ENV
 
 echo "Deploying to $NEW_ENV environment"
 
@@ -108,11 +106,6 @@ services:
 
 volumes:
   postgres_data_$NEW_ENV:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ../pg-data/$NEW_ENV
 
 networks:
   backend-network-$NEW_ENV:
