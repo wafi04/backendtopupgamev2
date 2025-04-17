@@ -149,7 +149,7 @@ model Product {
   categoryId         Int          @map("category_id")
   subCategoryId      Int?         @map("sub_category_id")
   name               String
-  providerId         String       @map("provider_id")
+  providerId         String       @map("provider_id")  @unique()
   provider           String
   price              Decimal      @map("price")
   regularPrice       Decimal?      @map("regular_price")
@@ -220,7 +220,8 @@ model Transaction {
 model TransactionItem {
   id              Int          @id @default(autoincrement())
   transactionId   String
-  productId       Int?
+  transactionItemId String  @unique()
+  productCode    String    
   quantity        Int          @default(1)
   price           Decimal
   status          String?      @default("PENDING")
@@ -231,14 +232,19 @@ model TransactionItem {
   serialNumber    String?      @map("serial_number")
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")
-  
+  provider        String?
+
+  reorderr         Boolean      @default(false) @map("reorder")
+
+
   // Relations
   transaction     Transaction  @relation(fields: [transactionId], references: [transactionId])
-  product         Product?     @relation(fields: [productId], references: [id])
+  product         Product?     @relation(fields: [productCode], references: [providerId])
   processRequests ProcessRequest[]
 
   @@index([transactionId])
-  @@index([productId])
+  @@index([transactionItemId])
+  @@index([productCode])
   @@map("transaction_items")
 }
 

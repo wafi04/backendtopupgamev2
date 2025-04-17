@@ -23,7 +23,7 @@ export class CategoriesRepository  {
       }
     async Create(req : CreateCategory){
         try {
-            const checkCode =  await this.FindCategoryByCode(req.kode)
+            const checkCode =  await this.FindCategoryByCode(req.code)
             
             if(checkCode){
                 throw new ApiError(504,"BAD_REQUEST","Category With Kode Alresdy exists")

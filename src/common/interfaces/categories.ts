@@ -1,8 +1,8 @@
 export interface CreateCategory {
-    nama : string
+    name : string
     subNama : string
     brand : string
-    kode : string
+    code : string
     serverId : number
     status : string
     thumbnail : string
