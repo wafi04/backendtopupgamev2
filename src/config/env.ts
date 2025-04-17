@@ -5,7 +5,7 @@ import * as path from 'path';
 
 export type TYPE_ENV = "development" | "production" | "test";
 
-export const ConfigEnv = (name: TYPE_ENV = process.env.NODE_ENV as TYPE_ENV || "production") => {
+export const ConfigEnv = (name: TYPE_ENV = process.env.NODE_ENV as TYPE_ENV || "development") => {
     // ... kode existing
     let envFile = '.env';
     
@@ -32,7 +32,9 @@ export const ConfigEnv = (name: TYPE_ENV = process.env.NODE_ENV as TYPE_ENV || "
             JWT_SECRET: process.env.JWT_SECRET as string,
             JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN as string,
             JWT_ISSUER: process.env.JWT_ISSUER as string,
-            APP_DOMAIN
+            APP_DOMAIN,
+            DIGI_API_KEY : process.env.DIGI_API_KEY as string,
+            DIGI_USERNAME : process.env.DIGI_USERNAME as string,
         };
     }
     

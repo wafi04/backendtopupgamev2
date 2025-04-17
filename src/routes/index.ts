@@ -3,16 +3,20 @@ import { getHealth } from '@/middleware/health';
 import authRoutes from '@/services/auth/controller/route';
 import CategoriesRoute from '@/services/categories/controller/categories';
 import { subCategoriesController } from '@/services/categories/controller/subCategories';
+import { MethodsRoutes } from '../services/methods/controller';
+import { layananRoutes } from '@/services/layanan/controller';
 
 const router: Router = Router();
 
 router.get('/', (req: Request, res: Response) => {
-    res.send('Diubah!');
+    res.send('Service Ready to Accept Connection !!!');
 });
 
 router.get('/health', getHealth);
 router.use('/api/v1/auth', authRoutes);
 router.use('/api/v1/categories',CategoriesRoute)
 router.use('/api/v1/subcategories',subCategoriesController)
+router.use('/api/v1/methods',MethodsRoutes)
+router.use('/api/v1/layanans',layananRoutes)
 
 export default router;

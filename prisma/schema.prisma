@@ -31,7 +31,6 @@ model Users {
   sessions          Session[]
   transactions      Transaction[]
   memberships       Membership[]
-  cart              Cart[]
 
   @@index([username, balance], name: "users_username_balance_idx")
   @@index([role, balance], name: "users_role_balance_idx")
@@ -163,116 +162,131 @@ model Method {
   @@map("methods")
 }
 
-
-
 model Layanan {
   id                 Int          @id @default(autoincrement()) @map("id")
   kategoriId         Int          @map("kategori_id")
-  detailsId          String?      @map("mongo_details_id") 
+  detailsId          String?      @map("details_id") 
   subCategoryId      Int          @default(0) @map("sub_category_id")
   layanan            String       @map("layanan")
   providerId         String       @map("provider_id")
-  harga              Int          @map("harga")
-  hargaReseller      Int          @map("harga_reseller")
-  hargaPlatinum      Int          @map("harga_platinum")
-  hargaGold          Int          @map("harga_gold")
-  hargaFlashSale     Int?         @default(0) @map("harga_flash_sale")
-  profit             Int          @map("profit")
-  profitReseller     Int          @map("profit_reseller")
-  profitPlatinum     Int          @map("profit_platinum")
-  profitGold         Int          @map("profit_gold")
+
+
+  harga              Decimal      @map("harga")
+  hargaReseller      Decimal      @map("harga_reseller")
+  hargaPlatinum      Decimal      @map("harga_platinum")
+  hargaGold          Decimal      @map("harga_gold")
+  hargaFlashSale     Decimal?     @default(0) @map("harga_flash_sale")
+  
+  profit             Decimal      @map("profit") @default(4)
+  profitReseller     Decimal      @map("profit_reseller") @default(4)
+  profitPlatinum     Decimal      @map("profit_platinum") @default(4)
+  profitGold         Decimal      @map("profit_gold") @default(4)
+  
+  isProfitPercentage        Boolean @default(false) @map("is_profit_percentage")
+  isResellerProfitPercentage Boolean @default(false) @map("is_reseller_profit_percentage")
+  isPlatinumProfitPercentage Boolean @default(false) @map("is_platinum_profit_percentage")
+  isGoldProfitPercentage     Boolean @default(false) @map("is_gold_profit_percentage")
+  
   isFlashSale        Boolean      @map("is_flash_sale")
   judulFlashSale     String?      @db.VarChar(255) @map("judul_flash_sale") 
   bannerFlashSale    String?      @db.VarChar(255) @map("banner_flash_sale") 
   expiredFlashSale   DateTime?    @db.Date @map("expired_flash_sale")
   catatan            String       @db.Text @map("catatan") 
+  
   status             Boolean      @map("status")
   provider           String       @map("provider")
   productLogo        String?      @map("product_logo")
-  isManualProcess    Boolean      @default(false) @map("is_manual_process")
   createdAt          DateTime     @default(now()) @map("created_at")
   updatedAt          DateTime     @updatedAt @map("updated_at")
   
   // Relations
   category           Categories   @relation(fields: [kategoriId], references: [id])
   subCategory        SubCategory? @relation(fields: [subCategoryId], references: [id])
-  cartItems     CartItem[]
   
-  @@index([kategoriId, status]) 
+  @@index([kategoriId, status])
   @@index([subCategoryId, status])
   @@index([providerId, status])
   @@index([isFlashSale, expiredFlashSale])
   @@index([status, isFlashSale])
-  @@index([isManualProcess])
   @@map("layanans")
 }
 
-model Cart {
-  id         Int        @id @default(autoincrement())
-  username   String     @map("username")
-  cartItems  CartItem[]
-  total     Int  @default(0)
-  isCheckedOut Boolean  @default(false) @map("is_checked_out")
-  createdAt  DateTime   @default(now()) @map("created_at")
-  updatedAt  DateTime   @updatedAt @map("updated_at")
-
-  user  Users  @relation(fields: [username], references: [username])
-  @@index([username])
-
-}
-
-model CartItem {
+model TransactionItems {
   id         Int       @id @default(autoincrement())
   cartId     Int       @map("cart_id")
   productId  Int?      @map("product_id")
-  layananId  Int?      @map("layanan_id")
   quantity   Int       @default(1)
-  price      Int
-  
-  providerStatus    String?          @map("provider_status")
-  providerReference String?          @map("provider_reference")
-  providerData      Json?            @map("provider_data")
-  providerSn        String?          @map("provider_sn")
-  providerUpdatedAt DateTime?        @map("provider_updated_at")
-  subTotal    Int    @default(0)
+  price      Decimal
+  profit     Decimal
+
   nickname          String?          @map("nickname")
   gameId            String?          @map("game_id")
   gameServer        String?          @map("game_server")
+  
   // Relations
-  cart       Cart      @relation(fields: [cartId], references: [id])
-  layanan    Layanan?  @relation(fields: [layananId], references: [id])
-
-  isManualProcess   Boolean          @default(false) @map("is_manual_process")
-  isProsesUlang     Boolean          @default(false) @map("is_proses_ulang")
-  isProsesManualAt  DateTime?        @map("is_proses_manual_at")
-  processedBy       String?          @map("processed_by")
+  processUlang      ProcessUlang[]
   metadata          Json?
   providerId        String?
   
-  transactionId Int?    @map("transaction_id")
-  transaction   Transaction? @relation(fields: [transactionId], references: [id])
-  
+  transactionId     String           @map("transaction_id")
+  transaction       Transaction?     @relation(fields: [transactionId], references: [transactionId])
+
+  // Digiflazz tracking fields
+  digiflazzRefId    String?          @map("digiflazz_ref_id")
+  status   String?          @map("status")
+  message  String?                   @map("message")
+  sn       String?                   @map("sn")
+  digiflazzCallback Json?            @map("digiflazz_callback")
+  digiflazzCallbackAt DateTime?      @map("digiflazz_callback_at")
+
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
-  @@index([isManualProcess])
   @@index([cartId])
-  @@index([layananId])
   @@index([transactionId])
+  @@index([digiflazzRefId])
+  @@index([status])
+}
+
+model Pembayaran {
+  id             Int       @id @default(autoincrement()) @map("id")
+  transactionId  String    @unique @map("transaction_id")
+  harga          Decimal   @map("harga")
+  noPembayaran   String?   @db.Text @map("no_pembayaran")
+  noPembeli      String    @map("no_pembeli")
+  status         String    @map("status")
+  metode         String    @map("metode")
+  reference      String?   @map("reference")
+  createdAt      DateTime? @default(now()) @map("created_at")
+  updatedAt      DateTime? @updatedAt @map("updated_at")
+  
+  // Relations
+  transaction    Transaction  @relation(fields: [transactionId], references: [transactionId])
+
+  // Duitku specific fields
+  duitkuMerchantCode   String?   @map("duitku_merchant_code")
+  duitkuReference      String?   @unique @map("duitku_reference")
+  duitkuCallbackData   Json?     @map("duitku_callback_data")
+  duitkuCallbackAt     DateTime? @map("duitku_callback_at")
+
+  @@index([metode])
+  @@index([transactionId])
+  @@index([status])
+  @@index([transactionId, metode, status])
+  @@index([duitkuReference])
+  @@map("pembayarans")
 }
 
 model Transaction {
   id                Int              @id @default(autoincrement())
-  transactionId           String           @unique @map("transaction_id")
+  transactionId     String           @unique @map("transaction_id")
   username          String           @map("username")
-  amount            Int
-  type              String           @db.VarChar(30)
+  amount            Decimal
+  type              String           @db.VarChar(30) 
   method            String
-  status            String           @default("PENDING")
   description       String?          @db.Text
+  status            String?          @map("status")
   
-  // Payment data
-  paymentStatus     String?          @map("payment_status")
   paymentReference  String?          @map("payment_reference")
   paymentData       Json?            @map("payment_data")
   paymentUpdatedAt  DateTime?        @map("payment_updated_at")
@@ -284,61 +298,52 @@ model Transaction {
     
   // Relations
   user              Users            @relation(fields: [username], references: [username])
-  cartItems         CartItem[]       
+  transactionItems  TransactionItems[]       
   pembayaran        Pembayaran?
+  membership        Membership?      @relation("TransactionMembership")
+  manualOrder       ManualOrder?
 
+  // New fields for tracking order processing
+  isManualOrder     Boolean          @default(false) @map("is_manual_order")
+  isReorder         Boolean          @default(false) @map("is_reorder")
+  processedBy       String?          @map("processed_by")
+  processedAt       DateTime?        @map("processed_at")
+  processingNote    String?          @db.Text @map("processing_note")
+  
   @@index([username])
   @@index([type])
-  @@index([status])
   @@index([method])
-  @@index([paymentStatus])
+  @@index([status])
   @@index([transactionId])
+  @@index([isManualOrder])
+  @@index([isReorder])
   
   @@map("transactions")
 }
-
-model Pembayaran {
-  id             Int       @id @default(autoincrement()) @map("id")
-  transactionId        String    @unique @map("transaction_id")
-  harga          String    @map("harga")
-  noPembayaran   String?   @db.Text @map("no_pembayaran")
-  noPembeli      String    @map("no_pembeli")
-  status         String    @map("status")
-  metode         String    @map("metode")
-  reference      String?   @map("reference")
-  createdAt      DateTime? @default(now()) @map("created_at")
-  updatedAt      DateTime? @updatedAt @map("updated_at")
-  
-  // Add relationship to Transaction model
-  transaction    Transaction  @relation(fields: [transactionId], references: [transactionId])
-
-  @@index([metode])
-  @@index([transactionId])
-  @@index([status])
-  @@index([transactionId, metode, status])
-  @@map("pembayarans")
-}
-
 
 model Membership {
   id            Int       @id @default(autoincrement())
   username      String    @map("username")
   planType      String    @map("plan_type") 
-  amount        Int
-  membeshipId       String    @map("membeship_id")
+  amount        Decimal
+  isPermanent   Boolean   @default(false) @map("is_permanent")
   status        String    @default("PENDING")
+
   startDate     DateTime? @map("start_date")
   endDate       DateTime? @map("end_date")
+  
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
   expiredAt     DateTime? @map("expired_at")
   
   users         Users     @relation(fields: [username], references: [username])
-
+  transaction   Transaction? @relation("TransactionMembership", fields: [transactionId], references: [transactionId]) 
+  transactionId String?  @unique  @map("transaction_id") 
+  
   @@index([username])
   @@index([status])
   @@index([planType])
-  @@index([membeshipId])
+  @@index([transactionId])
   @@map("memberships")
 }
 
@@ -347,7 +352,7 @@ model MembershipBenefit {
   planType     String   @map("plan_type")
   benefitName  String   @map("benefit_name")
   description  String   @db.Text
-  value        String   
+  value        String[]   
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -355,25 +360,28 @@ model MembershipBenefit {
   @@map("membership_benefits")
 }
 
-model ProsesManual {
+model ProcessUlang {
   id              Int       @id @default(autoincrement())
-  username        String    @map("username")
-  gameId          String    @map("game_id")
-  gameUsername    String    @map("game_username")
-  gameServer      String    @map("game_server")
-  orderId         String    @map("order_id")
-  status          String    @default("PENDING")
-  notes           String?   @db.Text
+  transactionItem TransactionItems @relation(fields: [transactionItemId], references: [id])
+  transactionItemId Int     @map("transaction_item_id")
+  transactioinId  String    @map("transaction_id")
+ 
+ processedBy     String   @map("processed_by")
+  noted           String?   @map("noted")
+  status          String    @default("PENDING") 
+
+  requestData     Json?     @map("request_data")
+  responseData    Json?     @map("response_data")
+  
   completedAt     DateTime? @map("completed_at")
-
-  createdBy       UserProsesManual @relation(fields: [username], references: [username])
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at") 
-
-  @@index([username])
-  @@index([orderId])
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  user            UserProsesManual       @relation(fields: [processedBy], references: [username])
+  @@index([transactioinId])
+  @@index([transactionItemId])
   @@index([status])
-  @@map("proses_manual")
+  @@map("process_ulang")
 }
 
 model UserProsesManual {
@@ -384,7 +392,56 @@ model UserProsesManual {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  prosesManual  ProsesManual[]
 
+  manualOrderId Int       @map("manual_order_id")
+  manualOrders      ManualOrder[]     
+  processUlangs ProcessUlang[]
+  
+
+  @@index([code])
+  @@index([username])
   @@map("user_proses_manual")
+}
+
+
+model ManualOrder {
+  id              Int         @id @default(autoincrement())
+  transactionId   String      @unique @map("transaction_id")
+  username        String      @map("username")
+  requestedBy     String?     @map("requested_by")
+  status          String      @default("PENDING") 
+  requestData     Json?       @map("request_data")
+  responseData    Json?       @map("response_data")
+  notes           String?     @db.Text
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+  completedAt     DateTime?   @map("completed_at")
+  
+  // Relations
+  user            UserProsesManual       @relation(fields: [username], references: [username])
+  transaction     Transaction @relation(fields: [transactionId], references: [transactionId])
+  
+  @@index([username])
+  @@index([status])
+  @@index([transactionId])
+  @@map("manual_orders")
+}
+
+
+model IntegrationLog {
+  id              Int       @id @default(autoincrement())
+  type            String    // DUITKU_REQUEST, DUITKU_CALLBACK, DIGIFLAZZ_REQUEST, DIGIFLAZZ_CALLBACK
+  requestData     Json?     @map("request_data")
+  responseData    Json?     @map("response_data")
+  status          String    // SUCCESS, ERROR, PENDING
+  transactionId   String?   @map("transaction_id")
+  referenceId     String?   @map("reference_id")
+  errorMessage    String?   @db.Text @map("error_message")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  @@index([type])
+  @@index([status])
+  @@index([transactionId])
+  @@index([referenceId])
+  @@map("integration_logs")
 }

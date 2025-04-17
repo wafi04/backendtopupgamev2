@@ -9,7 +9,7 @@ import { CreateMethod,  FilterMethod, UpdateMethods } from "@/common/interfaces/
 
 const MethodRepository = new MethodsRepository(prisma)
 const Service = new MethodsService(MethodRepository)
-const MethodsRoutes : Router = Router()
+export const MethodsRoutes : Router = Router()
 const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
