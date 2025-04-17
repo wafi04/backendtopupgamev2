@@ -72,7 +72,6 @@ model Session {
   userAgent    String?   @db.Text @map("user_agent")
   createdAt    DateTime  @default(now()) @map("created_at")
   
-  // Relations
   user         Users     @relation(fields: [userId], references: [id])
 
   @@index([userId], name: "session_user_id_idx")
@@ -212,8 +211,8 @@ model Cart {
   id         Int        @id @default(autoincrement())
   username   String     @map("username")
   cartItems  CartItem[]
+  total     Int  @default(0)
   isCheckedOut Boolean  @default(false) @map("is_checked_out")
-
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
 
@@ -235,7 +234,7 @@ model CartItem {
   providerData      Json?            @map("provider_data")
   providerSn        String?          @map("provider_sn")
   providerUpdatedAt DateTime?        @map("provider_updated_at")
-  
+  subTotal    Int    @default(0)
   nickname          String?          @map("nickname")
   gameId            String?          @map("game_id")
   gameServer        String?          @map("game_server")
@@ -264,7 +263,7 @@ model CartItem {
 
 model Transaction {
   id                Int              @id @default(autoincrement())
-  transactionId           String           @unique @map("order_id")
+  transactionId           String           @unique @map("transaction_id")
   username          String           @map("username")
   amount            Int
   type              String           @db.VarChar(30)
@@ -300,7 +299,7 @@ model Transaction {
 
 model Pembayaran {
   id             Int       @id @default(autoincrement()) @map("id")
-  transactionId        String    @unique @map("order_id")
+  transactionId        String    @unique @map("transaction_id")
   harga          String    @map("harga")
   noPembayaran   String?   @db.Text @map("no_pembayaran")
   noPembeli      String    @map("no_pembeli")
