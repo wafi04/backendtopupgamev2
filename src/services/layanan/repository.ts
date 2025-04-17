@@ -5,7 +5,7 @@ import { ApiError } from "@/common/utils/apiError";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
-export class LayananRepository {
+export class ProductRepository {
     private prisma;
     
     constructor(prismaClient = prisma) {

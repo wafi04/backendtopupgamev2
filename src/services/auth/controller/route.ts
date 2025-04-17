@@ -79,7 +79,8 @@ authRoutes.post('/logout', ContextAwareMiddleware.authMiddleware,asyncHandler( a
 
 authRoutes.get('/profile', ContextAwareMiddleware.authMiddleware,asyncHandler(async(req : Request, res : Response) => {
   const authContext = (req as RequestAuthContext).authContext;
-  return res.json({ user: authContext });
+  const user = await userRepo.getUserByUsername(authContext.username)
+  return res.json({ user: user });
 }))
 
 

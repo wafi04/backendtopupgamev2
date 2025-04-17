@@ -165,10 +165,10 @@ model Product {
   createdAt          DateTime     @default(now()) @map("created_at")
   updatedAt          DateTime     @updatedAt @map("updated_at")
   
-  profit             Decimal      @map("profit") @default(4)
-  profitReseller     Decimal      @map("profit_reseller") @default(4)
-  profitPlatinum     Decimal      @map("profit_platinum") @default(4)
-  profitGold         Decimal      @map("profit_gold") @default(4)
+  profit             Decimal      @map("profit") 
+  profitReseller     Decimal      @map("profit_reseller") 
+  profitPlatinum     Decimal      @map("profit_platinum") 
+  profitGold         Decimal      @map("profit_gold") 
   
   isProfitPercentage        Boolean @default(false) @map("is_profit_percentage")
   isResellerProfitPercentage Boolean @default(false) @map("is_reseller_profit_percentage")
@@ -183,7 +183,7 @@ model Product {
   // Relations
   subCategory        SubCategory? @relation(fields: [subCategoryId], references: [id])
   // Relations
-  category           Category     @relation(fields: [categoryId], references: [id])
+  category           Category?     @relation(fields: [categoryId], references: [id])
   transactionItems   TransactionItem[]
   
   @@index([categoryId, status])
@@ -234,7 +234,7 @@ model TransactionItem {
   updatedAt       DateTime     @updatedAt @map("updated_at")
   provider        String?
 
-  reorderr         Boolean      @default(false) @map("reorder")
+  isReorder         Boolean      @default(false) @map("reorder")
 
 
   // Relations
@@ -336,3 +336,4 @@ model ManualOrder {
   @@index([transactionId])
   @@map("manual_orders")
 }
+

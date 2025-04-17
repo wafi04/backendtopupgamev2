@@ -2,12 +2,10 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy package files first
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY .env.production ./
 
-# Install ts-patch explicitly first, then run npm ci
 RUN npm install ts-patch --save-dev && npm ci
 RUN npm install module-alias --save
 
@@ -76,26 +74,3 @@ RUN ls -la ./node_modules/module-alias || echo "module-alias not found"
 
 CMD ["/app/start.sh"]
 
-
-
-  # backend:
-  #   build:
-  #     context: ..
-  #     dockerfile: docker/Dockerfile.prod
-  #   container_name: backend_topup
-  #   ports:
-  #     - "4000:4000"
-  #   depends_on:
-  #     - db_production
-  #   networks:
-  #     - backend-network
-  #   environment:
-  #     - NODE_ENV=production
-  #   env_file:
-  #     - ../.env.production
-  #   healthcheck:
-  #     test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:4000/health"]
-  #     interval: 1m30s
-  #     timeout: 30s
-  #     retries: 5
-  #     start_period: 30s 

@@ -4,23 +4,33 @@ export type ACTIVATE = "ACTIVE" | "NONACTIVE"
 
 export type CreateProduct = {
     name: string
-    categoryId: number  // Changed from kategoriId to match schema
-    subCategoryId?: number | null  // Made optional to match schema
+    categoryId: number
+    subCategoryId?: number | null
     providerId: string
     provider: string
-    price: number  // Changed from harga to match schema
-    regularPrice?: number | null  // Added to match schema
-    resellerPrice?: number | null  // Changed from hargaReseller to match schema
-    memberPrice?: number | null  // Changed from hargaPlatinum/hargaGold to match schema
-    isFlashSale: boolean
-    flashSalePrice?: number | null  // Changed from hargaFlashSale to match schema
-    flashSaleUntil?: string | null  // Changed from expiredFlashSale to match schema
-    note?: string | null  // Changed from catatan to match schema
-    status: boolean
-    productImage?: string | null  // Added to match schema
-    productLogo?: string | null  // Added to match schema
-    titleFlashSale?: string | null  // Changed from judulFlashSale to match schema
+    price:  number | string
+    regularPrice?:  number | string | null
+    resellerPrice?:  number | string | null
+    memberPrice?:  number | string | null
+    isFlashSale?: boolean
+    flashSalePrice?:  number | string | null
+    flashSaleUntil?: Date | string | null
+    note?: string | null
+    status?: boolean
+    productImage?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profit:  number | string
+    profitReseller:  number | string
+    profitPlatinum:  number | string
+    profitGold:  number | string
+    isProfitPercentage?: boolean
+    isResellerProfitPercentage?: boolean
+    isPlatinumProfitPercentage?: boolean
+    isGoldProfitPercentage?: boolean
+    titleFlashSale?: string | null
     bannerFlashSale?: string | null
+    productLogo?: string | null
 }
 
 export interface ProductData extends CreateProduct {

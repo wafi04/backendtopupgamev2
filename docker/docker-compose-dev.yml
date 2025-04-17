@@ -1,0 +1,89 @@
+services:
+  db_development:
+    image: postgres:15-alpine
+    container_name: db_development
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vazzuniverse
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"  
+      TZ: Asia/Jakarta
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./init-scripts/dev-init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vazzuniverse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - backend-network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: 2
+
+  # backend:
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile.dev
+  #   container_name: backend_topup
+  #   ports:
+  #     - "4000:4000"
+  #   depends_on:
+  #     db_development:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend-network
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:postgres@db_development:5432/vazzuniverse?connect_timeout=300
+  #     - JWT_SECRET=DDDsmm6387262sbvagaca=
+  #     - PORT=4000
+  #     - JWT_EXPIRES_IN=8400
+  #     - APP_DOMAIN=localhost
+  #     - REDIS_URL=redis://redis:6379
+  #   volumes:
+  #     - ../src:/app/src
+  #     - ../prisma:/app/prisma
+  #     - /app/node_modules
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-q", "--spider", "http://0.0.0.0:4000/health"]
+  #     interval: 30s
+  #     timeout: 30s
+  #     retries: 5
+  #     start_period: 30s
+  
+volumes:
+  postgres_data_dev:
+  redis_data:
+
+networks:
+  backend-network:
+    driver: bridge

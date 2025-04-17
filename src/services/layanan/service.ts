@@ -1,9 +1,9 @@
 import { CreateProduct, UpdateProduct } from "@/common/interfaces/product";
-import { LayananRepository } from "./repository";
+import { ProductRepository } from "./repository";
 
-export class LayananService {
+export class ProductService {
     private repository;
-    constructor(repository = new LayananRepository()) {
+    constructor(repository = new ProductRepository()) {
         this.repository = repository;
     }
     async create(req: CreateProduct) {

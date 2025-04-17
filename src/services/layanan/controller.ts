@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
-import { LayananRepository } from "./repository";
-import { LayananService } from "./service";
+
 import { Request, Response, Router } from "express";
 import { ContextAwareMiddleware } from "@/middleware/middleware-auth";
 import { ADMIN_ROLE } from "@/common/interfaces/user";
@@ -8,13 +7,15 @@ import { asyncHandler } from "@/common/utils/handler";
 import { sendResponse } from "@/common/utils/response";
 import { ERROR_CODES } from "@/common/constants/error";
 import { CreateProduct, FilterProduct, UpdateProduct } from "@/common/interfaces/product";
+import { ProductRepository } from "./repository";
+import { ProductService } from "./service";
 
-const repository =  new LayananRepository(prisma)
-const service = new LayananService(repository)
-export const layananRoutes  : Router = Router()
+const repository =  new ProductRepository(prisma)
+const service = new ProductService(repository)
+export const ProductRoutes  : Router = Router()
 
 
-layananRoutes.post(
+ProductRoutes.post(
     '/',
     ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
     asyncHandler(async (req: Request, res: Response) => {
@@ -24,10 +25,10 @@ layananRoutes.post(
             sendResponse(res,null,ERROR_CODES.BAD_REQUEST,400);
         }
         const data =  await service.create(request);
-        sendResponse(res,data,"Created Layanan Successfully",201);
+        sendResponse(res,data,"Created Product Successfully",201);
     })
 );
-layananRoutes.put(
+ProductRoutes.put(
     '/:id',
     ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
     asyncHandler(async (req: Request, res: Response) => {
@@ -37,10 +38,10 @@ layananRoutes.put(
             sendResponse(res,null,ERROR_CODES.BAD_REQUEST,400);
         }
         const data =  await service.update(request,id);
-        sendResponse(res,data,"Updated Layanan Successfully",200);
+        sendResponse(res,data,"Updated Product Successfully",200);
     })
 );
-layananRoutes.delete(
+ProductRoutes.delete(
     '/:id',
     ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
     asyncHandler(async (req: Request, res: Response) => {
@@ -49,10 +50,10 @@ layananRoutes.delete(
             sendResponse(res,null,ERROR_CODES.BAD_REQUEST,400);
         }
         const data =  await service.delete(id);
-        sendResponse(res,data,"Deleted Layanan Successfully",200);
+        sendResponse(res,data,"Deleted Product Successfully",200);
     })
 );
-layananRoutes.get(
+ProductRoutes.get(
     '/:id',
     ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
     asyncHandler(async (req: Request, res: Response) => {
@@ -61,12 +62,12 @@ layananRoutes.get(
             sendResponse(res,null,ERROR_CODES.BAD_REQUEST,400);
         }
         const data =  await service.findById(id);
-        sendResponse(res,data,"Get Layanan Successfully",200);
+        sendResponse(res,data,"Get Product Successfully",200);
     })
 );
 
 
-layananRoutes.get(
+ProductRoutes.get(
     '/',
     ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
     asyncHandler(async (req: Request, res: Response) => {
@@ -80,7 +81,7 @@ layananRoutes.get(
             perPage : req.query.perPage ? Number(req.query.perPage) : undefined,
         }
         const data =  await service.findAll(filter);
-        sendResponse(res,data,"Get Layanan Successfully",200);
+        sendResponse(res,data,"Get Product Successfully",200);
     })
 );
   

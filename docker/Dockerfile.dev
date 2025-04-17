@@ -1,0 +1,32 @@
+FROM node:22-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install development dependencies
+RUN apk add --no-cache python3 make g++ gcc
+
+COPY package*.json ./
+COPY tsconfig.json ./
+
+RUN npm install
+
+# Install ts-patch and module-alias
+RUN npm install ts-patch --save-dev
+RUN npm install module-alias --save
+RUN npm install -g nodemon
+
+# Copy source code
+COPY . .
+
+
+RUN npx prisma generate
+
+RUN find ./node_modules/.prisma -type f -name "query-engine-*" -exec chmod +x {} \; || true
+RUN find ./node_modules/@prisma -type f -name "query-engine-*" -exec chmod +x {} \; || true
+
+# Expose the development port
+EXPOSE 4000
+
+# Command to run development server
+CMD ["npm", "run", "dev"]
