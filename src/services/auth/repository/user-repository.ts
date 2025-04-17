@@ -27,14 +27,14 @@ export class UserRepository {
         if(findUsername){
             throw new ApiError(504,"BAD_REQUEST","Username Telah Dipakai")
         }
-       return await prisma.users.create({
+       return await prisma.user.create({
         data: {
           balance: 0,
           name: data.name,
           password: data.password,
           role: "Member",
           username: data.username,
-          apiKey: GenerateApiKey(),
+          apiKey: GenerateApiKey({}),
           whatsapp: data.whatsApp,
           createdAt: new Date(),
           isDeleted : false,
@@ -59,7 +59,7 @@ export class UserRepository {
 
   async getUserByUsername(username: string): Promise<UserData | null> {
     try {
-      return await prisma.users.findUnique({
+      return await prisma.user.findUnique({
         where: { username },
         select: {
           id: true,
@@ -81,7 +81,7 @@ export class UserRepository {
 
   async deleteUser(username : string){
     try {
-        return await prisma.users.update({
+        return await prisma.user.update({
             where : {
                 username
             },
@@ -97,7 +97,7 @@ export class UserRepository {
   
   async updateUser(username: string, data: UpdateUser): Promise<UserData> {
     try {
-      return await prisma.users.update({
+      return await prisma.user.update({
         where: { username },
         data: {
           ...data,
@@ -122,7 +122,7 @@ export class UserRepository {
 
   async getUserWithSensitiveData(username: string) {
     try {
-      return await prisma.users.findUnique({
+      return await prisma.user.findUnique({
         where: { username },
         select: {
           id: true,

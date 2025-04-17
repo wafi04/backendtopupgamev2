@@ -28,7 +28,7 @@ export class CategoriesRepository  {
             if(checkCode){
                 throw new ApiError(504,"BAD_REQUEST","Category With Kode Alresdy exists")
             }
-            const data = await prisma.categories.create({
+            const data = await prisma.category.create({
                 data : {
                     ...req
                 }
@@ -41,7 +41,7 @@ export class CategoriesRepository  {
 
     async FindCategoryByCode(code : string){
         try {
-            return await prisma.categories.findUnique({where : {kode : code}})
+            return await prisma.category.findUnique({where : {code : code}})
         } catch (error) {
             this.handlePrismaError(error)
         }
@@ -49,7 +49,7 @@ export class CategoriesRepository  {
 
     async UpdateCategory(req : UpdateCategory,id : number){
         try {
-            return await prisma.categories.update({
+            return await prisma.category.update({
                 where : {
                     id,
                 },
@@ -64,7 +64,7 @@ export class CategoriesRepository  {
 
     async DeleteCategories(req :DeleteCategory){
         try {
-            return await prisma.categories.delete({
+            return await prisma.category.delete({
                 where : {
                     id : req.id
                 }
@@ -76,17 +76,17 @@ export class CategoriesRepository  {
 
     async FilterCategory(req : FilterCategory){
         try {
-            const where :Prisma.CategoriesWhereInput = {}
+            const where :Prisma.CategoryWhereInput = {}
             if(req.search){
                 where.OR = [
                     {
-                        kode: {
+                        code: {
                             contains: req.search,
                             mode: "insensitive"
                         }
                     },
                     {
-                        nama: {
+                        name: {
                             contains: req.search,
                             mode: "insensitive"
                         }
@@ -95,7 +95,7 @@ export class CategoriesRepository  {
             }
 
             if(req.type){
-                where.tipe = req.type
+                where.type= req.type
             }
 
             if(req.active){
@@ -107,8 +107,8 @@ export class CategoriesRepository  {
             const skip = (page - 1) * limit
 
             const [total, data] = await Promise.all([
-                prisma.categories.count({ where }),
-                prisma.categories.findMany({
+                prisma.category.count({ where }),
+                prisma.category.findMany({
                     where,
                     skip,
                     take: limit,

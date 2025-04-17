@@ -1,6 +1,6 @@
 import { ERROR_CODES_PRISMA } from "@/common/constants/erorr-prisma";
 import { ERROR_CODES } from "@/common/constants/error";
-import { CreateLayanan, FilterLayanan, UpdateLayanan } from "@/common/interfaces/layanan";
+import { CreateProduct, FilterProduct, UpdateProduct } from "@/common/interfaces/product";
 import { ApiError } from "@/common/utils/apiError";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
@@ -31,9 +31,12 @@ export class LayananRepository {
           throw new ApiError(500, ERROR_CODES.INTERNAL_SERVER_ERROR, "Unexpected server error");
         }
       }
-    async Create(req : CreateLayanan){
+      
+
+  
+    async Create(req : CreateProduct){
         try {
-            return await prisma.layanan.create({
+            return await prisma.product.create({
                 data : {
                     ...req
                 }
@@ -44,9 +47,9 @@ export class LayananRepository {
     }
 
 
-    async updateLayanan(req : UpdateLayanan,id : number){
+    async updateLayanan(req : UpdateProduct,id : number){
         try {
-            return await prisma.layanan.update({
+            return await prisma.product.update({
                 where : {
                     id
                 },
@@ -62,7 +65,7 @@ export class LayananRepository {
 
     async DeleteLayanan(id : number){
         try {
-            return await prisma.layanan.delete({
+            return await prisma.product.delete({
                 where : {
                     id 
                 }
@@ -74,7 +77,7 @@ export class LayananRepository {
 
     async FindById(id : number){
         try {
-            return await prisma.layanan.findUnique({
+            return await prisma.product.findUnique({
                 where : {
                     id
                 }
@@ -83,25 +86,25 @@ export class LayananRepository {
             this.handlePrismaError(error)
         }
     }
-    async FindAll(req: FilterLayanan) {
+    async FindAll(req: FilterProduct) {
         try {
-            const where: Prisma.LayananWhereInput = {};
-            const orderBy: Prisma.LayananOrderByWithRelationInput[] = [];
+            const where: Prisma.ProductWhereInput = {};
+            const orderBy: Prisma.ProductOrderByWithRelationInput[] = [];
             
             if (req.search) {
                 where.OR = [
-                    { layanan: { contains: req.search, mode: 'insensitive' } },
+                    { name: { contains: req.search, mode: 'insensitive' } },
                     { provider: { contains: req.search, mode: 'insensitive' } },
                     { providerId: { contains: req.search, mode: 'insensitive' } }
                 ];
             }
             
             // Handle flashSale filter
-            if (req.flashSale) {
-                where.isFlashSale = req.flashSale === 'ACTIVE';
+            if (req.isFlashSale) {
+                where.isFlashSale = req.isFlashSale === 'ACTIVE';
                 
-                if (req.flashSale === 'ACTIVE') {
-                    where.expiredFlashSale = {
+                if (req.isFlashSale === 'ACTIVE') {
+                    where.flashSaleUntil = {
                         gt: new Date() 
                     };
                 }
@@ -113,14 +116,14 @@ export class LayananRepository {
             }
             
             // Handle category filter
-            if (req.kategoryId) {
-                where.kategoriId = req.kategoryId;
+            if (req.categoryId) {
+                where.categoryId = req.categoryId;
             }
             
-            if (req.expensivetocheap) {
-                orderBy.push({ harga: 'desc' });
-            } else if (req.cheaptoexpensive) {
-                orderBy.push({ harga: 'asc' });
+            if (req.sortPriceDesc) {
+                orderBy.push({ price: 'desc' });
+            } else if (req.sortPriceAsc) {
+                orderBy.push({ price: 'asc' });
             } else {
                 orderBy.push({ updatedAt: 'desc' });
             }
@@ -132,7 +135,7 @@ export class LayananRepository {
             
             // Execute the query
             const [data, total] = await Promise.all([
-                this.prisma.layanan.findMany({
+                this.prisma.product.findMany({
                     where,
                     orderBy: orderBy.length > 0 ? orderBy : undefined,
                     skip,
@@ -142,7 +145,7 @@ export class LayananRepository {
                         subCategory: true
                     }
                 }),
-                this.prisma.layanan.count({ where })
+                this.prisma.product.count({ where })
             ]);
             
             return {

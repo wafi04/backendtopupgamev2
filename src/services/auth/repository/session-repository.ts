@@ -30,7 +30,7 @@ export class SessionRepository {
           id,
           expires: EXPIRES_DATE_TOKEN,
           sessionToken: data.sessionToken,
-          ipAddress: data.ipAddress,
+          ipAdress: data.ipAddress,
           userId: data.userId,
           userAgent: data.userAgent
         },
@@ -105,7 +105,7 @@ export class SessionRepository {
       sessionToken: session.sessionToken,
       userId: session.userId,
       expires: session.expires?.toISOString() as string,
-      ipAddress: session.ipAddress || null,
+      ipAddress: session.ipAdress || null,
       userAgent: session.userAgent || null,
       createdAt: session.createdAt.toISOString(),
     };

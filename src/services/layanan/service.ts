@@ -1,4 +1,4 @@
-import { CreateLayanan, UpdateLayanan } from "@/common/interfaces/layanan";
+import { CreateProduct, UpdateProduct } from "@/common/interfaces/product";
 import { LayananRepository } from "./repository";
 
 export class LayananService {
@@ -6,10 +6,10 @@ export class LayananService {
     constructor(repository = new LayananRepository()) {
         this.repository = repository;
     }
-    async create(req: CreateLayanan) {
+    async create(req: CreateProduct) {
         return await this.repository.Create(req);
     }
-    async update(req: UpdateLayanan, id: number) {
+    async update(req: UpdateProduct, id: number) {
         return await this.repository.updateLayanan(req, id);
     }
     async delete(id: number) {

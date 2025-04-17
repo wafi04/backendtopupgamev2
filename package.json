@@ -17,10 +17,12 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-"postinstall": "ts-patch install || true",
+  "postinstall": "ts-patch install || true",
   "build": "tsc -p tsconfig.json",
-"start:prod": "node -r tsconfig-paths/register -r module-alias/register --require=./tsconfig-paths.config.js dist/app.js",
+  "start:prod": "node -r tsconfig-paths/register -r module-alias/register --require=./tsconfig-paths.config.js dist/app.js",
     "migrate": "npx dotenv-cli -e .env.local -- npx prisma migrate dev",
+    "generate": "npx dotenv-cli -e .env.local -- npx prisma generate",
+    "reset": "npx dotenv-cli -e .env.local -- npx prisma migrate reset",
     "dev": "nodemon --exec \"npx ts-node -r tsconfig-paths/register\" src/app.ts"
   },
   "devDependencies": {
