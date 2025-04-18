@@ -5,11 +5,15 @@ import { sendResponse } from "@/common/utils/response";
 import { AuthContextManager, ContextAwareMiddleware, RequestAuthContext } from "@/middleware/middleware-auth";
 import { ERROR_CODES } from "@/common/constants/error";
 import { ConfigEnv } from "@/config/env";
+import { send } from "node:process";
+import prisma from "@/lib/prisma";
+import { SessionRepository } from "../repository/session-repository";
 
 // Inisialisasi repositories dan service
 const userRepo = new UserRepository();
 const authContextManager = new AuthContextManager()
-const authService = new AuthService(userRepo,authContextManager);
+const sessionRepo = new SessionRepository();
+const authService = new AuthService(userRepo,authContextManager,sessionRepo);
 
 // Buat router
 const authRoutes = Router();
@@ -34,8 +38,11 @@ authRoutes.post("/login", asyncHandler(async (req: Request, res: Response) => {
     const { username, password } = req.body;
     
     const requestInfo = {
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'] || ''
+      ipAddress: req.headers['x-forwarded-for']?.toString().split(',')[0].trim() || 
+                 req.headers['x-real-ip']?.toString() || 
+                 req.ip || 
+                 '',
+      userAgent: req.headers['user-agent'] || '',
     };
     
     const result = await authService.login({ username, password }, requestInfo);
@@ -49,6 +56,32 @@ authRoutes.post("/login", asyncHandler(async (req: Request, res: Response) => {
     });
     
     sendResponse(res,result,"Login Successfully",200)
+  }));
+
+  authRoutes.get("/verify", asyncHandler(async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(' ')[1] || req.cookies.session_token;
+    if (!token) {
+      return sendResponse(res, null, ERROR_CODES.UNAUTHORIZED, 401);
+    }
+    
+    const authManager = new AuthContextManager();
+    const result = await authManager.verifyToken(token);
+    if (result.valid) {
+      return sendResponse(res, {
+        valid: true,
+        user: {
+          userId: result.context?.userId,
+          username: result.context?.username,
+          sessionId : result.context?.sessionId,
+          role: result.context?.role,
+          emailVerified: result.context?.emailVerified
+        }
+      }, "Token is valid", 200);
+    } else if (result.expired) {
+      return sendResponse(res, { valid: false, expired: true }, ERROR_CODES.SESSION_EXPIRED, 401);
+    } else {
+      return sendResponse(res, { valid: false }, ERROR_CODES.UNAUTHORIZED, 401);
+    }
   }));
 
 authRoutes.post('/refresh-token', asyncHandler(async (req : Request, res : Response, next : NextFunction) => {
@@ -76,6 +109,30 @@ authRoutes.post('/logout', ContextAwareMiddleware.authMiddleware,asyncHandler( a
     next(error);
   }
 }))
+
+authRoutes.get('/sessions', ContextAwareMiddleware.authMiddleware,asyncHandler(async(req : Request, res : Response) => {
+  const authContext = (req as RequestAuthContext).authContext;
+  const sessions = await authService.getAllSessions(authContext.username)
+  sendResponse(res,sessions,"Get All Session Successfully",200)
+}))
+
+
+authRoutes.post('/sessions/revoke', ContextAwareMiddleware.authMiddleware,asyncHandler(async(req : Request, res : Response) =>
+  {
+  const {sessionId}= req.body
+  await authService.revokeSessions(sessionId)
+  sendResponse(res,null,"Revoke Session Successfully",200)
+  }
+))
+
+
+authRoutes.post('/sessions/revoke-all', ContextAwareMiddleware.authMiddleware,asyncHandler(async(req : Request, res : Response) =>
+  {
+  const authContext = (req as RequestAuthContext).authContext;
+    await sessionRepo.revokeAllSessions(authContext.userId)
+  sendResponse(res,null,"Revoke All Session Successfully",200)
+    }
+  ))
 
 authRoutes.get('/profile', ContextAwareMiddleware.authMiddleware,asyncHandler(async(req : Request, res : Response) => {
   const authContext = (req as RequestAuthContext).authContext;

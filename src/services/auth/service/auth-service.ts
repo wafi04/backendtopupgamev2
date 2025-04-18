@@ -10,7 +10,8 @@ import { AuthContextManager } from "@/middleware/middleware-auth";
 export class AuthService {
   constructor(
     private userRepo: UserRepository,
-    private authContextManager : AuthContextManager
+    private authContextManager : AuthContextManager,
+    private sessionRepo : SessionRepository
   ) {}
 
   async register(createData: CreateUser): Promise<UserData> {
@@ -83,6 +84,24 @@ export class AuthService {
      
       const sessionRepo = new SessionRepository();
       await sessionRepo.revokeSession(token);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async revokeSessions(session : string){
+      try {
+      const sessionRepo = new SessionRepository();
+      await sessionRepo.revokeSession(session)
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getAllSessions(username : string){
+    try {
+      const sessionAll =  await this.sessionRepo.getAllSession(username)
+      return sessionAll
     } catch (error) {
       throw error;
     }

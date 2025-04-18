@@ -6,7 +6,7 @@ import { ERROR_CODES } from '@/common/constants/error';
 import { sendResponse } from '@/common/utils/response';
 import { ConfigEnv } from '@/config/env';
 
-const config = ConfigEnv("production");
+const config = ConfigEnv();
 
 export interface AuthContext {
   userId: number;
@@ -112,6 +112,32 @@ export class AuthContextManager {
     }
   }
 
+  async verifyToken(token: string): Promise<{
+    valid: boolean;
+    expired: boolean;
+    context?: AuthContext;
+  }> {
+    try {
+      // Verify the token
+      const context = await this.getContextFromToken(token);
+      
+      // Check if session is still valid in database
+      const isSessionValid = await this.sessionRepo.validateSession(context.sessionId);
+      if (!isSessionValid) {
+        return { valid: false, expired: false };
+      }
+      
+      return { valid: true, expired: false, context };
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.errorCode === ERROR_CODES.SESSION_EXPIRED) {
+          return { valid: false, expired: true };
+        }
+      }
+      return { valid: false, expired: false };
+    }
+  }
+
   // Refresh token
   async refreshToken(token: string): Promise<string> {
     try {
@@ -124,6 +150,8 @@ export class AuthContextManager {
       
       // Verifikasi token
       jwt.verify(token, this.jwtSecret);
+
+      await this.sessionRepo.updateToken(decoded.sessionId, token);
       
       // Buat token baru dengan data yang sama
       return this.generateTokenWithContext({

@@ -1,7 +1,6 @@
 import { ERROR_CODES } from "@/common/constants/error";
 import { ApiError } from "@/common/utils/apiError";
 import { Prisma } from "@prisma/client";
-import { AuthService } from "../service/auth-service";
 import { UserRepository } from "./user-repository";
 import { sendMessageToQueue } from "@/lib/whatsapp/send";
 
@@ -10,7 +9,6 @@ export class ResetPasswordRepository {
         private authRepository : UserRepository
     ){
     }
-    // Qqwis@q9dXYCMpT
     private  handlePrismaError(error: unknown): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {

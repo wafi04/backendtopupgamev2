@@ -41,6 +41,7 @@ export class OrderManual  {
                 transactionItemId
             },
             data : {
+                
                 status : "SUCCESS"
             }
         })

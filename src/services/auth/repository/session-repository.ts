@@ -23,6 +23,20 @@ export class SessionRepository {
     }
   }
 
+
+  async updateToken(sessionId : string,token : string){
+    try {
+      return await prisma.session.update({
+        where: { id: sessionId },
+        data: {
+          sessionToken: token
+        },
+      });
+    } catch (error) {
+      this.handlePrismaError(error);
+    }
+  }
+
    async createSession(data: CreateSessions,id : string): Promise<Sessions> {
     try {
       const session = await prisma.session.create({
@@ -73,6 +87,33 @@ export class SessionRepository {
     }
   }
 
+  async getAllSession(username : string) {
+  try {
+      const user = await prisma.user.findUnique({
+        where : {
+          username
+        },
+      include: {
+        sessions : {
+          select : {
+            id : true,
+            expires : true,
+            ipAdress : true,
+            userAgent : true,
+            createdAt : true,
+          }
+        }
+      }
+    });
+    if (!user) {
+      throw new ApiError(404, ERROR_CODES.NOT_FOUND, "User not found");
+    }
+    return user.sessions;
+  } catch (error) {
+    this.handlePrismaError(error);
+  }
+  }
+
    async revokeSession(sessionId: string): Promise<void> {
     try {
       await prisma.session.delete({
@@ -114,9 +155,10 @@ export class SessionRepository {
    async validateSession(sessionToken: string): Promise<boolean> {
     try {
       const session = await prisma.session.findUnique({
-        where: { sessionToken },
+        where: { id : sessionToken },
         select: { expires: true }
       });
+
 
       return !!session && session.expires > new Date();
     } catch (error) {

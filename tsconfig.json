@@ -8,9 +8,6 @@
       "forceConsistentCasingInFileNames": true,
       "strict": true,
       "skipLibCheck": true,
-    "plugins": [
-      { "transform": "ts-transform-paths" }
-    ],
       "baseUrl": "./src",
       "paths": {
         "@/*": ["./*"]
