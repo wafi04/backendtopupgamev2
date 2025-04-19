@@ -95,8 +95,8 @@ model Category {
   description   String?       @db.Text
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
-  
-  // Relations
+  logo          String?       @db.VarChar(255)
+
   subCategories SubCategory[]
   products      Product[]
 
@@ -196,23 +196,23 @@ model Product {
 model Transaction {
   id              Int             @id @default(autoincrement())
   transactionId   String          @unique
-  userId          Int
+  username         String         @db.VarChar(50)
   amount          Decimal
   type            String
   method          String
   status          String          @default("PENDING")
-  isManual        Boolean         @default(false) @map("is_manual")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
   completedAt     DateTime?       @map("completed_at")
   
-  user            User            @relation(fields: [userId], references: [id])
+  user            User            @relation(fields: [username], references: [username])
   items           TransactionItem[]
   payment         Payment?
   membership      Membership?     @relation("TransactionMembership")
   manualOrder     ManualOrder?
 
-  @@index([userId])
+  @@index([username])
+  @@index([type])
   @@index([status])
   @@map("transactions")
 }

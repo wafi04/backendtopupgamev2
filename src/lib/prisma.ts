@@ -1,22 +1,20 @@
 // prisma.ts atau database.ts
-import { ConfigEnv } from '@/config/env';
-import { PrismaClient } from '@prisma/client';
+import { ConfigEnv } from "@/config/env";
+import { PrismaClient } from "@prisma/client";
 
 // Ambil environment dari process.env.NODE_ENV atau default 'development'
-const environment = ("development") as 'development' | 'production' | 'test';
-
+const environment = "development" as "development" | "production" | "test";
 
 const config = ConfigEnv(environment);
 
 // Buat instance PrismaClient
 const prismaClientSingleton = () => {
   return new PrismaClient({
-    log: environment === 'development' ? ['query', 'error', 'warn'] : ['error'],
     datasources: {
       db: {
-        url: config.DATABASE_URL || process.env.DATABASE_URL
-      }
-    }
+        url: config.DATABASE_URL || process.env.DATABASE_URL,
+      },
+    },
   });
 };
 
@@ -29,6 +27,6 @@ const globalForPrisma = globalThis as unknown as {
 
 const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
-if (environment !== 'production') globalForPrisma.prisma = prisma;
+if (environment !== "production") globalForPrisma.prisma = prisma;
 
 export default prisma;

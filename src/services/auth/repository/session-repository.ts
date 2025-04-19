@@ -1,35 +1,50 @@
-import  prisma  from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { ERROR_CODES } from "@/common/constants/error";
-import { CreateSessions, Sessions, SessionsWithUser } from "@/common/interfaces/sessions";
+import {
+  CreateSessions,
+  Sessions,
+  SessionsWithUser,
+} from "@/common/interfaces/sessions";
 import { ApiError } from "@/common/utils/apiError";
 import { Prisma, Session } from "@prisma/client";
 import { EXPIRES_DATE_TOKEN, ROLE_USER } from "@/common/constants";
 
 export class SessionRepository {
-  private  handlePrismaError(error: unknown): never {
+  private handlePrismaError(error: unknown): never {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
-        case 'P2002':
-          throw new ApiError(409, ERROR_CODES.CONFLICT, "Session token already exists");
-        case 'P2025':
+        case "P2002":
+          throw new ApiError(
+            409,
+            ERROR_CODES.CONFLICT,
+            "Session token already exists"
+          );
+        case "P2025":
           throw new ApiError(404, ERROR_CODES.NOT_FOUND, "Session not found");
         default:
-          throw new ApiError(500, ERROR_CODES.INTERNAL_SERVER_ERROR, "Database operation failed");
+          throw new ApiError(
+            500,
+            ERROR_CODES.INTERNAL_SERVER_ERROR,
+            "Database operation failed"
+          );
       }
     } else if (error instanceof ApiError) {
       throw error;
     } else {
-      throw new ApiError(500, ERROR_CODES.INTERNAL_SERVER_ERROR, "Unexpected server error");
+      throw new ApiError(
+        500,
+        ERROR_CODES.INTERNAL_SERVER_ERROR,
+        "Unexpected server error"
+      );
     }
   }
 
-
-  async updateToken(sessionId : string,token : string){
+  async updateToken(sessionId: string, token: string) {
     try {
       return await prisma.session.update({
         where: { id: sessionId },
         data: {
-          sessionToken: token
+          sessionToken: token,
         },
       });
     } catch (error) {
@@ -37,7 +52,7 @@ export class SessionRepository {
     }
   }
 
-   async createSession(data: CreateSessions,id : string): Promise<Sessions> {
+  async createSession(data: CreateSessions, id: string): Promise<Sessions> {
     try {
       const session = await prisma.session.create({
         data: {
@@ -46,7 +61,7 @@ export class SessionRepository {
           sessionToken: data.sessionToken,
           ipAdress: data.ipAddress,
           userId: data.userId,
-          userAgent: data.userAgent
+          userAgent: data.userAgent,
         },
       });
 
@@ -56,7 +71,7 @@ export class SessionRepository {
     }
   }
 
-   async getSession(sessionToken: string): Promise<SessionsWithUser> {
+  async getSession(sessionToken: string): Promise<SessionsWithUser> {
     try {
       const session = await prisma.session.findUnique({
         where: { sessionToken },
@@ -64,79 +79,91 @@ export class SessionRepository {
           user: {
             select: {
               id: true,
-              role : true,
+              role: true,
               username: true,
-              isEmailVerified : true,
-            }
-          }
-        }
+              isEmailVerified: true,
+            },
+          },
+        },
       });
 
       if (!session) {
-        throw new ApiError(401, ERROR_CODES.UNAUTHORIZED, "Invalid session token");
+        throw new ApiError(
+          401,
+          ERROR_CODES.UNAUTHORIZED,
+          "Invalid session token"
+        );
       }
 
       if (session.expires < new Date()) {
         await this.revokeSession(session.id);
-        throw new ApiError(401, ERROR_CODES.SESSION_EXPIRED, "Session has expired");
+        throw new ApiError(
+          401,
+          ERROR_CODES.SESSION_EXPIRED,
+          "Session has expired"
+        );
       }
 
-      return {...this.formatSessionResponse(session),username : session.user.username,userId : session.user.id,isEmailVerified : session.user.isEmailVerified,role : session.user.role as ROLE_USER}
+      return {
+        ...this.formatSessionResponse(session),
+        username: session.user.username,
+        userId: session.user.id,
+        isEmailVerified: session.user.isEmailVerified,
+        role: session.user.role as ROLE_USER,
+      };
     } catch (error) {
       this.handlePrismaError(error);
     }
   }
 
-  async getAllSession(username : string) {
-  try {
+  async getAllSession(username: string) {
+    try {
       const user = await prisma.user.findUnique({
-        where : {
-          username
+        where: {
+          username,
         },
-      include: {
-        sessions : {
-          select : {
-            id : true,
-            expires : true,
-            ipAdress : true,
-            userAgent : true,
-            createdAt : true,
-          }
-        }
+        include: {
+          sessions: {
+            select: {
+              id: true,
+              expires: true,
+              ipAdress: true,
+              userAgent: true,
+              createdAt: true,
+            },
+          },
+        },
+      });
+      if (!user) {
+        throw new ApiError(404, ERROR_CODES.NOT_FOUND, "User not found");
       }
-    });
-    if (!user) {
-      throw new ApiError(404, ERROR_CODES.NOT_FOUND, "User not found");
+      return user.sessions;
+    } catch (error) {
+      this.handlePrismaError(error);
     }
-    return user.sessions;
-  } catch (error) {
-    this.handlePrismaError(error);
-  }
   }
 
-   async revokeSession(sessionId: string): Promise<void> {
+  async revokeSession(sessionId: string): Promise<void> {
     try {
       await prisma.session.delete({
-        where: { id: sessionId }
+        where: { id: sessionId },
       });
     } catch (error) {
       this.handlePrismaError(error);
     }
   }
 
-   async revokeAllSessions(userId: number): Promise<{ count: number }> {
+  async revokeAllSessions(userId: number): Promise<{ count: number }> {
     try {
       return await prisma.session.deleteMany({
-        where: { userId }
+        where: { userId },
       });
     } catch (error) {
       this.handlePrismaError(error);
     }
   }
 
-  private  formatSessionResponse(session: Session
-    
-  ): Sessions {
+  private formatSessionResponse(session: Session): Sessions {
     if (!session) {
       throw new ApiError(404, ERROR_CODES.NOT_FOUND, "Session data is empty");
     }
@@ -152,13 +179,12 @@ export class SessionRepository {
     };
   }
 
-   async validateSession(sessionToken: string): Promise<boolean> {
+  async validateSession(sessionToken: string): Promise<boolean> {
     try {
       const session = await prisma.session.findUnique({
-        where: { id : sessionToken },
-        select: { expires: true }
+        where: { id: sessionToken },
+        select: { expires: true },
       });
-
 
       return !!session && session.expires > new Date();
     } catch (error) {
