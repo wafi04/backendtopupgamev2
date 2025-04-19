@@ -17,7 +17,7 @@ const asyncHandler = (fn: Function) => (req: Request, res: Response, next: NextF
 MethodsRoutes.post('/',ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]), asyncHandler(async(req : Request,res : Response) => {
     const data  : CreateMethod = req.body
     const response =  await Service.Create(data)
-
+    console.log(response)
     if(!response){
         sendResponse(res,null,"Failed To Create Methods",500)
     }

@@ -22,7 +22,7 @@ model User {
   isDeleted        Boolean            @default(false) @map("is_deleted")
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @updatedAt @map("updated_at")
-  deletedAt        DateTime?        @map("deleted_at")
+  deletedAt        DateTime?          @map("deleted_at")
   isEmailVerified  Boolean            @default(false) @map("is_email_verified")
   // Relations
   accounts          Account[]
@@ -196,24 +196,23 @@ model Product {
 model Transaction {
   id              Int             @id @default(autoincrement())
   transactionId   String          @unique
-  userId          Int
+  username        String          @map("username")  @db.VarChar(50)
   amount          Decimal
   type            String
   method          String
-  status          String          @default("PENDING")
   isManual        Boolean         @default(false) @map("is_manual")
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
   completedAt     DateTime?       @map("completed_at")
   
-  user            User            @relation(fields: [userId], references: [id])
+  user            User            @relation(fields: [username], references: [username])
   items           TransactionItem[]
   payment         Payment?
   membership      Membership?     @relation("TransactionMembership")
   manualOrder     ManualOrder?
 
-  @@index([userId])
-  @@index([status])
+  @@index([username])
+  @@index([type])
   @@map("transactions")
 }
 
@@ -271,7 +270,7 @@ model Payment {
 
 model Membership {
   id            Int       @id @default(autoincrement())
-  userId        Int
+  username      String
   planType      String    @map("plan_type") 
   amount        Decimal
   isPermanent   Boolean   @default(false) @map("is_permanent")
@@ -282,11 +281,11 @@ model Membership {
   updatedAt     DateTime  @updatedAt @map("updated_at")
   
   // Relations
-  user          User      @relation(fields: [userId], references: [id])
+  user          User      @relation(fields: [username], references: [username])
   transaction   Transaction? @relation("TransactionMembership", fields: [transactionId], references: [transactionId]) 
   transactionId String?   @unique  @map("transaction_id") 
   
-  @@index([userId])
+  @@index([username])
   @@index([status])
   @@index([planType])
   @@map("memberships")
