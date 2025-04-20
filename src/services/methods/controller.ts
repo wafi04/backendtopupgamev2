@@ -22,11 +22,12 @@ const asyncHandler =
 MethodsRoutes.post('/', ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]), asyncHandler(async (req: Request, res: Response) => {
   const data: CreateMethod = req.body
   const response = await Service.Create(data)
-  console.log(response)
   if (!response) {
     sendResponse(res, null, "Failed To Create Methods", 500)
   }
+  sendResponse(res, response, "Created Methods Successfully", 201);
 }))
+
 MethodsRoutes.post(
   "/",
   ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
@@ -40,6 +41,8 @@ MethodsRoutes.post(
     sendResponse(res, response, "Created Methods Successfully", 201);
   })
 );
+
+
 MethodsRoutes.patch(
   "/:id",
   ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
@@ -53,6 +56,7 @@ MethodsRoutes.patch(
     sendResponse(res, response, "Updated Methods Successfully", 204);
   })
 );
+
 MethodsRoutes.delete(
   "/:id",
   ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),

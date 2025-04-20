@@ -6,8 +6,8 @@ export interface CreateCategory {
   serverId: number;
   status: string;
   thumbnail: string;
-  type: string;
-  instruction: string;
+  tipe: string;
+  petunjuk: string;
   ketLayanan: string;
   ketId: string;
   placeholder1: string;
