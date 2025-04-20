@@ -52,17 +52,24 @@ export class CategoriesRepository {
       const data = await prisma.category.create({
         data: {
           name: req.name,
+          subName : req.subName,
           code: req.code,
           description: req.ketLayanan,
-          thumbnail: req.bannerLayanan,
+          thumbnail: req.thumbnail,
           status: req.status,
           type: req.tipe,
-          logo: req.thumbnail,
+          logo: req.logo,
+          brand: req.brand,
+          placeholder1: req.placeholder1,
+          placeholder2: req.placeholder2,
+          serverId: req.serverId,
+          instructions: req.petunjuk,
+          
         },
       });
       return data;
     } catch (error) {
-      console.log(error);
+      console.log(error)
       this.handlePrismaError(error);
     }
   }
@@ -86,6 +93,7 @@ export class CategoriesRepository {
         },
       });
     } catch (error) {
+      console.log(error)
       this.handlePrismaError(error);
     }
   }
@@ -156,6 +164,7 @@ export class CategoriesRepository {
         },
       };
     } catch (error) {
+      console.log(error)
       this.handlePrismaError(error);
     }
   }

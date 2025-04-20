@@ -3,3 +3,5 @@ node_modules
 .env
 docker/pg-data/
 docker/pg_data/
+docker/redis_data/
+

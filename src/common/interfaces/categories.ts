@@ -1,6 +1,7 @@
+
 export interface CreateCategory {
     name : string
-    subNama : string
+    subName : string
     brand : string
     code : string
     serverId : number
@@ -12,7 +13,7 @@ export interface CreateCategory {
     ketId : string
     placeholder1 : string
     placeholder2 : string
-    bannerLayanan : string
+    logo : string
 }
 export interface CategoriesData extends CreateCategory{
     createdAt  : string

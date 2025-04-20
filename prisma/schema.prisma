@@ -88,6 +88,7 @@ model VerificationToken {
 model Category {
   id            Int           @id @default(autoincrement())
   name          String
+  subName      String    @map("sub_name")  @db.VarChar(100)
   code          String?       @unique
   status        String        @default("active")
   thumbnail     String
@@ -96,6 +97,13 @@ model Category {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   logo          String?       @db.VarChar(255)
+  placeholder1    String?       @db.VarChar(255)
+  placeholder2    String?       @db.VarChar(255)
+  brand      String?
+  serverId     Int   @default(0)
+  instructions  String? @db.Text
+
+
 
   subCategories SubCategory[]
   products      Product[]
@@ -196,19 +204,12 @@ model Product {
 model Transaction {
   id              Int             @id @default(autoincrement())
   transactionId   String          @unique
-<<<<<<< HEAD
-  username        String          @map("username")  @db.VarChar(50)
   amount          Decimal
   type            String
   method          String
   isManual        Boolean         @default(false) @map("is_manual")
-=======
   username         String         @db.VarChar(50)
-  amount          Decimal
-  type            String
-  method          String
   status          String          @default("PENDING")
->>>>>>> 2b5378bbca6f2ecdb174ef2dc7fc8c4486bf0325
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
   completedAt     DateTime?       @map("completed_at")
@@ -221,10 +222,7 @@ model Transaction {
 
   @@index([username])
   @@index([type])
-<<<<<<< HEAD
-=======
   @@index([status])
->>>>>>> 2b5378bbca6f2ecdb174ef2dc7fc8c4486bf0325
   @@map("transactions")
 }
 
