@@ -97,14 +97,11 @@ model Category {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
   logo          String?       @db.VarChar(255)
-  placeholder1    String?       @db.VarChar(255)
-  placeholder2    String?       @db.VarChar(255)
+  placeholder1    String?       @db.Text  @map("placeholder_1")
+  placeholder2    String?       @db.Text @map("placeholder_2")
   brand      String?
-  serverId     Int   @default(0)
+  serverId     Int   @default(0)  @map("server_id")
   instructions  String? @db.Text
-
-
-
   subCategories SubCategory[]
   products      Product[]
 
