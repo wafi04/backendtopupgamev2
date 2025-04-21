@@ -1,6 +1,6 @@
-export const ADMIN_ROLE = "Admin"
-export const MEMBER_ROLE = "Member"
-export const PLATINUM_ROLE = "Platinum"
+export const ADMIN_ROLE = "ADMIN"
+export const MEMBER_ROLE = "MEMBER"
+export const PLATINUM_ROLE = "PLATINUM"
 
 export interface UserData { 
     name: string; 

@@ -1,3 +1,4 @@
+
 export interface CreateCategory {
   name: string;
   subName: string;
@@ -6,10 +7,9 @@ export interface CreateCategory {
   serverId: number;
   status: string;
   thumbnail: string;
-  tipe: string;
-  petunjuk: string;
-  ketLayanan: string;
-  ketId: string;
+  type: string;
+  instructions : string
+  description: string;
   placeholder1: string;
   placeholder2: string;
   logo: string;

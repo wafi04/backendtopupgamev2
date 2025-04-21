@@ -54,22 +54,21 @@ export class CategoriesRepository {
           name: req.name,
           subName : req.subName,
           code: req.code,
-          description: req.ketLayanan,
+          description: req.description,
           thumbnail: req.thumbnail,
           status: req.status,
-          type: req.tipe,
+          type: req.type,
           logo: req.logo,
           brand: req.brand,
           placeholder1: req.placeholder1,
           placeholder2: req.placeholder2,
           serverId: req.serverId,
-          instructions: req.petunjuk,
+          instructions: req.instructions,
           
         },
       });
       return data;
     } catch (error) {
-      console.log(error)
       this.handlePrismaError(error);
     }
   }

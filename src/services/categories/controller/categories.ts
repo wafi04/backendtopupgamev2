@@ -17,7 +17,7 @@ CategoriesRoute.post('/', ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]) as
     const data = await catService.Create(req.body)
     sendResponse(res,data,"Create Category Successfully",201)
 }))
-CategoriesRoute.patch('/:id', ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]) as RequestHandler, asyncHandler(async(req: Request, res: Response) => {
+CategoriesRoute.put('/:id', ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]) as RequestHandler, asyncHandler(async(req: Request, res: Response) => {
     const id = parseInt(req.params.id)
     const data = await catService.Update(req.body, id)
     sendResponse(res, data, "Update Category Successfully", 200)
@@ -31,6 +31,7 @@ CategoriesRoute.delete('/:id', ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE
 
 CategoriesRoute.get('/', asyncHandler(async(req: Request, res: Response) => {
     const filter = {
+        type : req.query.type  as string,
         search: req.query.search as string,
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 10,
