@@ -9,17 +9,13 @@ import {
 } from "@/middleware/middleware-auth";
 import { ERROR_CODES } from "@/common/constants/error";
 import { ConfigEnv } from "@/config/env";
-import { send } from "node:process";
-import prisma from "@/lib/prisma";
 import { SessionRepository } from "../repository/session-repository";
 
-// Inisialisasi repositories dan service
 const userRepo = new UserRepository();
 const authContextManager = new AuthContextManager();
 const sessionRepo = new SessionRepository();
 const authService = new AuthService(userRepo, authContextManager, sessionRepo);
 
-// Buat router
 const authRoutes = Router();
 
 const asyncHandler =
@@ -27,7 +23,6 @@ const asyncHandler =
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 
-// Route untuk registrasi
 authRoutes.post(
   "/register",
   asyncHandler(async (req: Request, res: Response) => {
@@ -74,7 +69,6 @@ authRoutes.post(
 authRoutes.get(
   "/verify",
   asyncHandler(async (req: Request, res: Response) => {
-    console.log("Authorization Header:", req.headers.authorization);
     const token =
       req.headers.authorization?.split(" ")[1] || req.cookies.session_token;
     if (!token) {

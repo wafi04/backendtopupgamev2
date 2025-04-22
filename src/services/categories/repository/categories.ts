@@ -1,3 +1,4 @@
+import { PrismaErrorHandler } from "@/common/constants/erorr-prisma";
 import { ERROR_CODES } from "@/common/constants/error";
 import {
   CreateCategory,
@@ -10,33 +11,23 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
 export class CategoriesRepository {
-  private handlePrismaError(error: unknown): never {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      switch (error.code) {
-        case "P2002":
-          throw new ApiError(
-            409,
-            ERROR_CODES.CONFLICT,
-            "Category With Code Already exists"
-          );
-        case "P2025":
-          throw new ApiError(404, ERROR_CODES.NOT_FOUND, "Category not found");
-        default:
-          throw new ApiError(
-            500,
-            ERROR_CODES.INTERNAL_SERVER_ERROR,
-            "Database operation failed"
-          );
+  private prismaErrorHandler: PrismaErrorHandler;
+
+  constructor() {
+    this.prismaErrorHandler = new PrismaErrorHandler({
+      CONFLICT: {
+        status: 409,
+        message: "Category with code already exists"
+      },
+      NOT_FOUND: {
+        status: 404,
+        message: "Category not found"
       }
-    } else if (error instanceof ApiError) {
-      throw error;
-    } else {
-      throw new ApiError(
-        500,
-        ERROR_CODES.INTERNAL_SERVER_ERROR,
-        "Unexpected server error"
-      );
-    }
+    });
+  }
+
+  private handlePrismaError(error: unknown): never {
+    return this.prismaErrorHandler.handle(error);
   }
   async Create(req: CreateCategory) {
     try {
@@ -109,34 +100,59 @@ export class CategoriesRepository {
     }
   }
 
-  async FilterCategory(req: FilterCategory) {
-    try {
-      const where: Prisma.CategoryWhereInput = {};
-      if (req.search) {
-        where.OR = [
-          {
-            code: {
-              contains: req.search,
-              mode: "insensitive",
-            },
+ async FilterCategory(req: FilterCategory) {
+  try {
+    const where: Prisma.CategoryWhereInput = {};
+    
+    // Add search condition
+    if (req.search) {
+      where.OR = [
+        {
+          code: {
+            contains: req.search,
+            mode: "insensitive",
           },
-          {
-            name: {
-              contains: req.search,
-              mode: "insensitive",
-            },
+        },
+        {
+          name: {
+            contains: req.search,
+            mode: "insensitive",
           },
-        ];
-      }
+        },
+      ];
+    }
 
-      if (req.type) {
-        where.type = req.type;
-      }
+    // Add type filter
+    if (req.type) {
+      where.type = req.type;
+    }
 
-      if (req.active) {
-        where.status = req.active;
-      }
+    // Add active/status filter
+    if (req.active) {
+      where.status = req.active;
+    }
 
+    // Handle 'all' parameter - skip pagination if all is true
+    if (req.all) {
+      // Fetch all records without pagination
+      const data = await prisma.category.findMany({
+        where,
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      return {
+        categories: data,
+        meta: {
+          total: data.length,
+          page: 1,
+          limit: data.length,
+          totalPages: 1,
+        },
+      };
+    } 
+    else {
       const page = req.page || 1;
       const limit = req.limit || 10;
       const skip = (page - 1) * limit;
@@ -162,9 +178,10 @@ export class CategoriesRepository {
           totalPages: Math.ceil(total / limit),
         },
       };
-    } catch (error) {
-      console.log(error)
-      this.handlePrismaError(error);
     }
+  } catch (error) {
+    console.log(error);
+    this.handlePrismaError(error);
   }
+}
 }

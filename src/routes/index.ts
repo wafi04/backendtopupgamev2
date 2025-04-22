@@ -13,7 +13,9 @@ router.get("/", async (req: Request, res: Response) => {
   res.send("Service Ready to Accept Connection !!!");
 });
 
-router.get("/api/v1/digiflazz/get-product", GetProductFromDigiflazz);
+router.get("/api/v1/digiflazz/get-product", async (req : Request,res : Response) => {
+  GetProductFromDigiflazz(req,res)
+});
 router.get("/health", getHealth);
 router.use("/api/v1/auth", authRoutes);
 router.use("/api/v1/categories", CategoriesRoute);

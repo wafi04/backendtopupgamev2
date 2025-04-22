@@ -36,7 +36,8 @@ CategoriesRoute.get('/', asyncHandler(async(req: Request, res: Response) => {
         page: parseInt(req.query.page as string) || 1,
         limit: parseInt(req.query.limit as string) || 10,
         active: req.query.active as string,
-        status: req.query.status as string
+        status: req.query.status as string,
+        all : req.query.all === "all"
     }
     const data = await catService.FilterCategory(filter)
     sendResponse(res, data, "Get Categories Successfully", 200)

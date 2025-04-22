@@ -1,6 +1,7 @@
 export const ADMIN_ROLE = "ADMIN"
 export const MEMBER_ROLE = "MEMBER"
 export const PLATINUM_ROLE = "PLATINUM"
+export const RESELLER_ROLE = "RESELLER"
 
 export interface UserData { 
     name: string; 

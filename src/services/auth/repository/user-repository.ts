@@ -1,5 +1,5 @@
 import { ERROR_CODES } from "../../../common/constants/error";
-import { CreateUser, UpdateUser, UserData } from "../../../common/interfaces/user";
+import { CreateUser, MEMBER_ROLE, UpdateUser, UserData } from "../../../common/interfaces/user";
 import { ApiError } from "../../../common/utils/apiError";
 import { GenerateApiKey } from "../../../common/utils/generate";
 import { Prisma } from "@prisma/client";
@@ -32,7 +32,7 @@ export class UserRepository {
           balance: 0,
           name: data.name,
           password: data.password,
-          role: "Member",
+          role: MEMBER_ROLE,
           username: data.username,
           apiKey: GenerateApiKey({}),
           whatsapp: data.whatsApp,

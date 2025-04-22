@@ -27,16 +27,20 @@ subCategoriesController.get(
   "/",
   ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
   asyncHandler(async (req: Request, res: Response) => {
+    const rawActive = req.query.active as string;
+
+    let active: boolean | undefined;
+    if (rawActive === "active") active = true;
+    else if (rawActive === "inactive") active = false;
+
     const filter: FilterSubcategory = {
-      active: req.query.active === "active",
-      categoryId: parseInt(req.query.categoryId as string),
+      active,
+      categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
       limit: parseInt(req.query.limit as string) || 10,
       page: parseInt(req.query.page as string) || 1,
       search: (req.query.search as string) ?? "",
     };
-    console.log("filter", filter);
-    const data = await subCategoriesService.FilterCategory(filter);
-    console.log("data", data);
+        const data = await subCategoriesService.FilterCategory(filter);
     sendResponse(res, data, "Sub category Successfully", 200);
   })
 );

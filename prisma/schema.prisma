@@ -159,7 +159,7 @@ model Product {
   price              Decimal      @map("price")
   regularPrice       Decimal?      @map("regular_price")
   resellerPrice      Decimal?     @map("reseller_price")
-  memberPrice        Decimal?     @map("member_price")
+  platinumPrice        Decimal?     @map("member_price")
   isFlashSale        Boolean      @default(false) @map("is_flash_sale")
   flashSalePrice     Decimal?     @map("flash_sale_price")
   flashSaleUntil     DateTime?    @map("flash_sale_until")
@@ -173,17 +173,17 @@ model Product {
   profit             Decimal      @map("profit") 
   profitReseller     Decimal      @map("profit_reseller") 
   profitPlatinum     Decimal      @map("profit_platinum") 
-  profitGold         Decimal      @map("profit_gold") 
+  profitRegular         Decimal      @map("profit_regular") 
   
   isProfitPercentage        Boolean @default(false) @map("is_profit_percentage")
   isResellerProfitPercentage Boolean @default(false) @map("is_reseller_profit_percentage")
   isPlatinumProfitPercentage Boolean @default(false) @map("is_platinum_profit_percentage")
-  isGoldProfitPercentage     Boolean @default(false) @map("is_gold_profit_percentage")
+  isRegularProfitPercentage     Boolean @default(false) @map("is_regular_profit_percentage")
   
   titleFlashSale     String?      @db.VarChar(255) @map("title_flash_sale") 
-  bannerFlashSale    String?      @db.VarChar(255) @map("banner_flash_sale") 
+  bannerFlashSale    String?      @db.Text @map("banner_flash_sale") 
   
-  productLogo        String?      @map("product_logo")
+  productLogo        String?      @db.Text @map("product_logo")
 
   // Relations
   subCategory        SubCategory? @relation(fields: [subCategoryId], references: [id])
@@ -204,6 +204,7 @@ model Transaction {
   amount          Decimal
   type            String
   method          String
+  position        String        @db.VarChar(100)   @default("cart")   @unique
   isManual        Boolean         @default(false) @map("is_manual")
   username         String         @db.VarChar(50)
   status          String          @default("PENDING")
@@ -218,7 +219,6 @@ model Transaction {
   manualOrder     ManualOrder?
 
   @@index([username])
-  @@index([type])
   @@index([status])
   @@map("transactions")
 }
@@ -227,7 +227,7 @@ model TransactionItem {
   id              Int          @id @default(autoincrement())
   transactionId   String
   transactionItemId String  @unique()
-  productCode    String    
+  productCode     String    
   quantity        Int          @default(1)
   price           Decimal
   status          String?      @default("PENDING")

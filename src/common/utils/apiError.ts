@@ -1,10 +1,7 @@
-import { ERROR_CODES } from "../constants/error";
-
-
 export class ApiError extends Error {
     constructor(
       public statusCode: number,
-      public errorCode: keyof typeof ERROR_CODES,
+      public errorCode: string,
       message: string,
       public details?: any
     ) {

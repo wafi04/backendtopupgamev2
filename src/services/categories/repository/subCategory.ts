@@ -1,54 +1,36 @@
-import { ERROR_CODES } from "@/common/constants/error";
+import { PrismaErrorHandler } from "@/common/constants/erorr-prisma";
 import {
-  CreateCategory,
   CreateSubCategories,
   DeleteSubcategory,
   FilterSubcategory,
-  UpdateCategory,
   UpdateSubCategory,
 } from "@/common/interfaces/categories";
-import { ApiError } from "@/common/utils/apiError";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
 export class SubCategoryRepositories {
   private prisma;
+  private prismaErrorHandler: PrismaErrorHandler;
 
   constructor(prismaClient = prisma) {
     this.prisma = prismaClient;
+      this.prismaErrorHandler = new PrismaErrorHandler({
+       CONFLICT: {
+         status: 409,
+         message: " Sub Category with code already exists"
+       },
+       NOT_FOUND: {
+         status: 404,
+         message: "Sub Category not found"
+       }
+     });
   }
-  private handlePrismaError(error: unknown): never {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      switch (error.code) {
-        case "P2002":
-          throw new ApiError(
-            409,
-            ERROR_CODES.CONFLICT,
-            "SubCategory With Code Already exists"
-          );
-        case "P2025":
-          throw new ApiError(
-            404,
-            ERROR_CODES.NOT_FOUND,
-            "SubCategory not found"
-          );
-        default:
-          throw new ApiError(
-            500,
-            ERROR_CODES.INTERNAL_SERVER_ERROR,
-            "Database operation failed"
-          );
-      }
-    } else if (error instanceof ApiError) {
-      throw error;
-    } else {
-      throw new ApiError(
-        500,
-        ERROR_CODES.INTERNAL_SERVER_ERROR,
-        "Unexpected server error"
-      );
-    }
-  }
+ 
+   
+ 
+   private handlePrismaError(error: unknown): never {
+     return this.prismaErrorHandler.handle(error);
+   }
 
   async Create(req: CreateSubCategories) {
     try {
@@ -81,9 +63,9 @@ export class SubCategoryRepositories {
     try {
       const where: Prisma.SubCategoryWhereInput = {};
 
-      if (req.active !== undefined) {
-        where.active = req.active;
-      }
+      if (typeof req.active === "boolean") {
+      where.active = req.active;
+    }
 
       if (req.search) {
         where.OR = [
@@ -109,9 +91,6 @@ export class SubCategoryRepositories {
           orderBy: {
             createdAt: "desc",
           },
-          include: {
-            category: true,
-          },
         }),
       ]);
 
@@ -125,6 +104,7 @@ export class SubCategoryRepositories {
         },
       };
     } catch (error) {
+      console.log(error)
       this.handlePrismaError(error);
     }
   }

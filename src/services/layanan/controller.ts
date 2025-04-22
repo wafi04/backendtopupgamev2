@@ -69,7 +69,6 @@ ProductRoutes.get(
 
 ProductRoutes.get(
     '/',
-    ContextAwareMiddleware.roleMiddleware([ADMIN_ROLE]),
     asyncHandler(async (req: Request, res: Response) => {
         const filter : FilterProduct = {
             sortPriceAsc : req.query.sortPriceAsc === "PRICEASC" ? true : false,

@@ -35,7 +35,7 @@ export class Digiflazz {
         };
 
         if (create.serverId) {
-            payload['customer_no'] = `${create.userId}.${create.serverId}`;
+            payload['customer_no'] = `${create.userId}${create.serverId}`;
         }
 
         try {
@@ -110,7 +110,6 @@ export class Digiflazz {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-
             return await response.json();
         } catch (error) {
             console.error('Error getting product list:', error);

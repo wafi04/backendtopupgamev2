@@ -27,6 +27,7 @@ export type FilterCategory = {
   search?: string;
   type?: string;
   page?: number;
+  all?  : boolean
   limit?: number;
   active?: string;
   status?: string;
