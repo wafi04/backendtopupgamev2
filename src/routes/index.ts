@@ -6,6 +6,7 @@ import { subCategoriesController } from "@/services/categories/controller/subCat
 import { MethodsRoutes } from "../services/methods/controller";
 import { ProductRoutes } from "@/services/layanan/controller";
 import GetProductFromDigiflazz from "@/lib/digiflazz/get-product";
+import { bannerRoutes } from "@/services/banner/controller";
 
 const router: Router = Router();
 
@@ -22,5 +23,7 @@ router.use("/api/v1/categories", CategoriesRoute);
 router.use("/api/v1/subcategories", subCategoriesController);
 router.use("/api/v1/methods", MethodsRoutes);
 router.use("/api/v1/products", ProductRoutes);
+router.use("/api/v1/banner", bannerRoutes);
+
 
 export default router;

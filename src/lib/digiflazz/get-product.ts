@@ -27,20 +27,15 @@ export default async function GetProductFromDigiflazz(req: Request, res: Respons
   try {
     const digiflazz = new Digiflazz();
     const cat = new CategoriesRepository();
-    
-    // Dapatkan data produk dari Digiflazz
     const digiResponse = await digiflazz.GetProductList();
     
-    // Periksa dan ekstrak array produk dari respons
     let digiProducts = [];
     
-    // Cek apakah respons memiliki properti yang berisi array produk
     if (digiResponse && typeof digiResponse === 'object') {
-      // Jika respons adalah objek dengan properti data
-      if (Array.isArray(digiResponse)) {
-        digiProducts = digiResponse;
+      if (Array.isArray(digiResponse.data)) {
+        digiProducts = digiResponse.data
       } 
-      // Tambahkan log untuk debugging
+
       else {
         console.log("Unexpected response format from Digiflazz:", digiResponse);
         throw new Error("Invalid response format from Digiflazz API");
@@ -91,7 +86,6 @@ export default async function GetProductFromDigiflazz(req: Request, res: Respons
           }
 
           try {
-            // Gunakan transaksi untuk operasi database
             await prisma.$transaction(async (tx) => {
               const existingService = await tx.product.findFirst({
                 where: {
@@ -100,7 +94,6 @@ export default async function GetProductFromDigiflazz(req: Request, res: Respons
               });
 
               if (!existingService) {
-                // Hitung harga dengan markup
                 const regularPrice = Math.round(
                   item.price + (item.price * defaultProfits.profitGold) / 100
                 );
@@ -125,8 +118,8 @@ export default async function GetProductFromDigiflazz(req: Request, res: Respons
                     profit: defaultProfits.profit,
                     profitReseller: defaultProfits.profitReseller,
                     profitPlatinum: defaultProfits.profitPlatinum,
-                    profitGold: defaultProfits.profitGold,
-                    isGoldProfitPercentage: true,
+                    profitRegular: defaultProfits.profitGold,
+                    isRegularProfitPercentage: true,
                     isPlatinumProfitPercentage: true,
                     isProfitPercentage: true,
                     isResellerProfitPercentage: true,

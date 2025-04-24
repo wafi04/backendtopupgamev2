@@ -45,10 +45,10 @@ export type UpdateProduct = Partial<CreateProduct>
 
 export type FilterProduct = {
     search?: string
-    isFlashSale?: ACTIVATE
+    isFlashSale?: boolean
     page?: number
     perPage?: number
-    status?: ACTIVATE
+    status?: boolean
     categoryId?: number  // Changed from kategoryId to match schema
     sortPriceDesc?: boolean  // Changed from expensivetocheap to be more clear
     sortPriceAsc?: boolean   // Changed from cheaptoexpensive to be more clear

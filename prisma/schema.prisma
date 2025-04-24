@@ -149,6 +149,14 @@ model Method {
   @@map("methods")
 }
 
+model Banner {
+  id    Int  @db.Integer  @id  @default(autoincrement())
+  urlImage  String  @db.Text   
+  description  String?   @db.Text
+  title    String?  @db.VarChar(100)
+  createdAt    DateTime  @default(now())
+}
+
 model Product {
   id                 Int          @id @default(autoincrement())
   categoryId         Int          @map("category_id")

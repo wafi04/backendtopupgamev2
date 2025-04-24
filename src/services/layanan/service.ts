@@ -1,4 +1,4 @@
-import { CreateProduct, UpdateProduct } from "@/common/interfaces/product";
+import { CreateProduct, FilterProduct, UpdateProduct } from "@/common/interfaces/product";
 import { ProductRepository } from "./repository";
 
 export class ProductService {
@@ -6,9 +6,7 @@ export class ProductService {
     constructor(repository = new ProductRepository()) {
         this.repository = repository;
     }
-    async create(req: CreateProduct) {
-        return await this.repository.Create(req);
-    }
+   
     async update(req: UpdateProduct, id: number) {
         return await this.repository.updateLayanan(req, id);
     }
@@ -18,7 +16,10 @@ export class ProductService {
     async findById(id: number) {
         return await this.repository.FindById(id);
     }
-    async findAll(req: any) {
+    async findProductByCategory(code : string) {
+        return this.repository.findProductByCategoryCode(code)
+    }
+    async findAll(req: FilterProduct) {
         return await this.repository.FindAll(req);
     }
 }

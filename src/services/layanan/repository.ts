@@ -33,19 +33,6 @@ export class ProductRepository {
       }
       
 
-  
-    async Create(req : CreateProduct){
-        try {
-            return await prisma.product.create({
-                data : {
-                    ...req
-                }
-            })
-        } catch (error) {
-            this.handlePrismaError(error)
-        }
-    }
-
 
     async updateLayanan(req : UpdateProduct,id : number){
         try {
@@ -58,6 +45,23 @@ export class ProductRepository {
                 }
             })
         } catch (error) {
+            this.handlePrismaError(error)
+        }
+    }
+
+    async findProductByCategoryCode(code : string) {
+        try {
+            return await prisma.category.findFirst({
+                where: {
+                    code
+                },
+                include: {
+                    products: true,
+                    subCategories : true
+                }
+            })
+        } catch (error) {
+            console.log(error)
             this.handlePrismaError(error)
         }
     }
@@ -101,21 +105,22 @@ export class ProductRepository {
             
             // Handle flashSale filter
             if (req.isFlashSale) {
-                where.isFlashSale = req.isFlashSale === 'ACTIVE';
-                
-                if (req.isFlashSale === 'ACTIVE') {
+                if (req.isFlashSale) {
                     where.flashSaleUntil = {
                         gt: new Date() 
                     };
                 }
             }
             
-            // Handle status filter
-            if (req.status) {
-                where.status = req.status === 'ACTIVE';
-            }
             
-            // Handle category filter
+            if (req.status !== undefined) {
+               if (typeof req.status === 'string') {
+                  where.status = req.status === 'active';
+               } else {
+                  where.status = req.status;
+               }
+           }
+            
             if (req.categoryId) {
                 where.categoryId = req.categoryId;
             }
@@ -128,22 +133,16 @@ export class ProductRepository {
                 orderBy.push({ updatedAt: 'desc' });
             }
             
-            // Handle pagination
             const page = req.page ?? 1;
             const perPage = req.perPage ?? 10;
             const skip = (page - 1) * perPage;
             
-            // Execute the query
             const [data, total] = await Promise.all([
                 this.prisma.product.findMany({
                     where,
                     orderBy: orderBy.length > 0 ? orderBy : undefined,
                     skip,
                     take: perPage,
-                    include: {
-                        category: true,
-                        subCategory: true
-                    }
                 }),
                 this.prisma.product.count({ where })
             ]);
@@ -158,6 +157,7 @@ export class ProductRepository {
                 }
             };
         } catch (error) {
+            console.log(error)
             this.handlePrismaError(error);
         }
     }
