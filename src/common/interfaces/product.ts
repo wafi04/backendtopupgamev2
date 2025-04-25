@@ -1,4 +1,5 @@
 import { CategoriesData, SubCategoryData } from "./categories"
+import { ADMIN_ROLE, MEMBER_ROLE, PLATINUM_ROLE, RESELLER_ROLE } from "./user"
 
 export type ACTIVATE = "ACTIVE" | "NONACTIVE"
 
@@ -8,22 +9,22 @@ export type CreateProduct = {
     subCategoryId?: number | null
     providerId: string
     provider: string
-    price:  number | string
-    regularPrice?:  number | string | null
-    resellerPrice?:  number | string | null
-    memberPrice?:  number | string | null
+    price:  number 
+    regularPrice?:  number  | null
+    resellerPrice?:  number  | null
+    memberPrice?:  number  | null
     isFlashSale?: boolean
-    flashSalePrice?:  number | string | null
-    flashSaleUntil?: Date | string | null
+    flashSalePrice?:  number  | null
+    flashSaleUntil?: Date  | null
     note?: string | null
     status?: boolean
     productImage?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    profit:  number | string
-    profitReseller:  number | string
-    profitPlatinum:  number | string
-    profitGold:  number | string
+    createdAt?: string | Date
+    updatedAt?: Date  | string
+    profit:  number 
+    profitReseller:  number 
+    profitPlatinum:  number 
+    profitGold:  number 
     isProfitPercentage?: boolean
     isResellerProfitPercentage?: boolean
     isPlatinumProfitPercentage?: boolean
@@ -52,4 +53,13 @@ export type FilterProduct = {
     categoryId?: number  // Changed from kategoryId to match schema
     sortPriceDesc?: boolean  // Changed from expensivetocheap to be more clear
     sortPriceAsc?: boolean   // Changed from cheaptoexpensive to be more clear
+}
+
+export type minMax = "min" | "max"
+
+export interface FilterProductByCategory {
+  code: string;
+  price?: string
+  subcategory?: string;
+  role?:  string
 }

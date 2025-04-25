@@ -164,12 +164,12 @@ model Product {
   name               String
   providerId         String       @map("provider_id")  @unique()
   provider           String
-  price              Decimal      @map("price")
-  regularPrice       Decimal?      @map("regular_price")
-  resellerPrice      Decimal?     @map("reseller_price")
-  platinumPrice        Decimal?     @map("member_price")
+  price             Int      @map("price")
+  regularPrice      Int?      @map("regular_price")
+  resellerPrice     Int?     @map("reseller_price")
+  platinumPrice       Int?     @map("member_price")
   isFlashSale        Boolean      @default(false) @map("is_flash_sale")
-  flashSalePrice     Decimal?     @map("flash_sale_price")
+  flashSalePrice    Int?     @map("flash_sale_price")
   flashSaleUntil     DateTime?    @map("flash_sale_until")
   note               String?      @db.Text
   
@@ -178,10 +178,10 @@ model Product {
   createdAt          DateTime     @default(now()) @map("created_at")
   updatedAt          DateTime     @updatedAt @map("updated_at")
   
-  profit             Decimal      @map("profit") 
-  profitReseller     Decimal      @map("profit_reseller") 
-  profitPlatinum     Decimal      @map("profit_platinum") 
-  profitRegular         Decimal      @map("profit_regular") 
+  profit            Int      @map("profit") 
+  profitReseller    Int      @map("profit_reseller") 
+  profitPlatinum    Int      @map("profit_platinum") 
+  profitRegular        Int      @map("profit_regular") 
   
   isProfitPercentage        Boolean @default(false) @map("is_profit_percentage")
   isResellerProfitPercentage Boolean @default(false) @map("is_reseller_profit_percentage")
@@ -209,9 +209,9 @@ model Product {
 model Transaction {
   id              Int             @id @default(autoincrement())
   transactionId   String          @unique
-  amount          Decimal
+  amount         Int
   type            String
-  method          String
+  method          String?    
   position        String        @db.VarChar(100)   @default("cart")   @unique
   isManual        Boolean         @default(false) @map("is_manual")
   username         String         @db.VarChar(50)
@@ -228,6 +228,7 @@ model Transaction {
 
   @@index([username])
   @@index([status])
+  @@index([method])
   @@map("transactions")
 }
 
@@ -237,9 +238,11 @@ model TransactionItem {
   transactionItemId String  @unique()
   productCode     String    
   quantity        Int          @default(1)
-  price           Decimal
+  price           Int
   status          String?      @default("PENDING")
   gameId          String?      @map("game_id")
+  productImage   String?      @db.Text
+  productName   String?       @db.VarChar(255)
   gameServer      String?      @map("game_server")
   nickName        String?      @map("nickname")
   message         String?      @map("message")
@@ -265,7 +268,7 @@ model TransactionItem {
 model Payment {
   id              Int          @id @default(autoincrement())
   transactionId   String       @unique
-  amount          Decimal
+  amount          Int
   method          String
   reference       String?
   customerPhone      String    @map("customer_number")
@@ -287,7 +290,7 @@ model Membership {
   id            Int       @id @default(autoincrement())
   username      String
   planType      String    @map("plan_type") 
-  amount        Decimal
+  amount       Int
   isPermanent   Boolean   @default(false) @map("is_permanent")
   status        String    @default("PENDING")
   startDate     DateTime? @map("start_date")

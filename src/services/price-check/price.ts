@@ -114,6 +114,8 @@ export async function PriceTransactions(role: string, productCode: string) {
   return {
     price: finalPrice,
     profit,
+    logo : product.productLogo,
+    productName : product.name,
     status  : true
   }
 }

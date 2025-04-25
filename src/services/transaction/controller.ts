@@ -6,38 +6,42 @@ import {  ContextAwareMiddleware, RequestAuthContext } from "@/middleware/middle
 import { asyncHandler } from "@/common/utils/handler";
 import { sendResponse } from "@/common/utils/response";
 
-export const transactionController: Router = Router();
+export const transactionRoutes: Router = Router();
 const userRepo = new UserRepository();
 const repository = new TransactionRepository(prisma, userRepo);
 
-transactionController.post('/cart', ContextAwareMiddleware.authMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  const body = {
-    items: req.body.items || [],
-    type: req.body.type,
-    methodCode: req.body.methodCode,
-  };
-    
-  const authContext = (req as RequestAuthContext).authContext;
-  
- 
-  if (!body.items || !Array.isArray(body.items) || body.items.length === 0) {
-    sendResponse(res,undefined,"No items provided",400)
-  }
-  
-  if (!body.type || !body.methodCode) {
-    sendResponse(res,undefined,"Missing required fields",400)
-  }
-  
+transactionRoutes.post(
+  '/cart',
+  ContextAwareMiddleware.authMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const body = {
+      items: req.body.items || [],
+    };
+
+    const authContext = (req as RequestAuthContext).authContext;
+
+    if (!body.items || !Array.isArray(body.items) || body.items.length === 0) {
+      return sendResponse(res, undefined, "No items provided", 400);
+    }
+
+    console.log(body)
+
     const result = await repository.addToCart({
-        ...body,
-        username : authContext.username
-  });
-  
-  sendResponse(res,result,"Cart Created Successfully",201)
-}));
+      ...body,
+      type: "TOPUP",
+      username: authContext.username,
+    });
+
+    if (!result.success) {
+      return sendResponse(res, undefined, "Failed To Create Cart", 400);
+    }
+
+    return sendResponse(res, result.data, "Cart Created Successfully", result.code);
+  })
+);
 
 
-transactionController.post("/cartitem", ContextAwareMiddleware.authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+transactionRoutes.post("/cartitem", ContextAwareMiddleware.authMiddleware, asyncHandler(async (req: Request, res: Response) => {
     const body = {
         gameId: req.body.gameId,
         gameServer: req.body.gameServer,
@@ -45,8 +49,10 @@ transactionController.post("/cartitem", ContextAwareMiddleware.authMiddleware, a
         nickname : req.body.nickName ?? undefined
     }
       const authContext = (req as RequestAuthContext).authContext;
-
-    const addItems = repository.AddItemToCart({
+      if(!body){
+        sendResponse(res,undefined,"Missing required Fields")
+      }
+    const addItems = repository.addItemToCart({
         ...body,
         username : authContext.username
     })
@@ -57,7 +63,7 @@ transactionController.post("/cartitem", ContextAwareMiddleware.authMiddleware, a
 }))
 
 
-transactionController.get('/cart', ContextAwareMiddleware.authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+transactionRoutes.get('/cart', ContextAwareMiddleware.authMiddleware, asyncHandler(async (req: Request, res: Response) => {
   const authContext = (req as RequestAuthContext).authContext;
   const cart = await repository.getCartByUsername(authContext.username)
   sendResponse(res,cart,"Get Cart Successfully",200)

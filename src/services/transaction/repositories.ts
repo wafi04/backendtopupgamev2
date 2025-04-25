@@ -5,13 +5,12 @@ import { GenerateId } from "@/common/utils/generate";
 
 interface CreateTransaction {
   items: {
-    gameID: string
+    gameId: string
     gameServer?: string
     nickname?: string
     productCode: string
   }[]
   type: string
-  methodCode: string
   username: string
 }
 
@@ -42,7 +41,6 @@ export class TransactionRepository {
     this.prisma = prismaClient;
     this.user = user;
   }
-  
   async addToCart(req: CreateTransaction): Promise<CartResponse> {
     try {
       const user = await this.user.getUserByUsername(req.username);
@@ -54,15 +52,23 @@ export class TransactionRepository {
         };
       }
       
-      const transactionId = GenerateId("VAZ");
+      const existingCart = await this.prisma.transaction.findFirst({
+        where: {
+          username: user.username,
+          type: "TOPUP",
+          position: "cart"
+        }
+      });
       
+      const transactionId = existingCart?.transactionId ?? GenerateId("VAZ");
+      
+      // Initialize with 0
       let totalAmount = 0;
       
       const transactionItems = [];
-      
       for (const item of req.items) {
         const priceInfo = await PriceTransactions(user.role, item.productCode);
-        
+      
         if (!priceInfo.status) {
           return {
             success: false,
@@ -72,14 +78,17 @@ export class TransactionRepository {
         }
         
         const price = priceInfo.price ?? 0;
-        totalAmount += price;
+        // Use simple addition for integers
+        totalAmount += parseInt(price.toString(), 10);
         
         const transactionItem = {
           transactionItemId: GenerateId("ITEM"),
+          productCode: item.productCode, 
           transactionId: transactionId,
-          productCode: item.productCode,
           price: price,
-          gameId: item.gameID,
+          productImage : priceInfo.logo,
+          gameId: item.gameId,
+          productName : priceInfo.productName,
           gameServer: item.gameServer || null,
           nickName: item.nickname || null,
           quantity: 1,
@@ -88,23 +97,62 @@ export class TransactionRepository {
         
         transactionItems.push(transactionItem);
       }
-      
-      const transaction = await this.prisma.transaction.create({
-        data: {
-          transactionId: transactionId,
-          amount: totalAmount,
-          type: req.type,
-          method: req.methodCode,
-          position: "cart",
-          username: req.username,
-          items: {
-            create: transactionItems
+  
+      let transaction;
+      if (!existingCart) {
+        transaction = await this.prisma.transaction.create({
+          data: {
+            transactionId: transactionId,
+            amount: totalAmount,
+            type: req.type,
+            position: "cart",
+            username: req.username,
+            items : {
+              create: transactionItems.map(item => {
+                const { transactionId, ...itemWithoutTransactionId } = item;
+                return itemWithoutTransactionId;
+              })
+            },
+          },
+          include: {
+            items: true
           }
-        },
-        include: {
-          items: true
+        });
+      } else {
+        try {
+          const results = await Promise.all(
+            transactionItems.map((item) => {
+              return this.addItemToCart({
+                gameId: item.gameId,
+                gameServer: item.gameServer ?? '',
+                productCode: item.productCode, 
+                username: user.username,
+                nickname: item.nickName ?? ''
+              });
+            })
+          );
+          
+          const failedItems = results.filter(result => !result.success);
+          if (failedItems.length > 0) {
+            return {
+              success: false,
+              code: 400,
+              message: "Failed to add some items to cart"
+            };
+          }
+          
+          transaction = await this.prisma.transaction.findFirst({
+            where: { transactionId: transactionId },
+            include: { items: true }
+          });
+        } catch (error) {
+          return {
+            success: false,
+            code: 500,
+            message: "Failed to add items to cart"
+          };
         }
-      });
+      }
       
       return {
         code: 201,
@@ -119,53 +167,79 @@ export class TransactionRepository {
       };
     }
   }
-    
-    async AddItemToCart(req : AddItemsToCart) {
-        const user = await this.user.getUserByUsername(req.username)
-        if (!user) {
-            return {
-                status : false
-            }
-        }
-
-        const transaction = await prisma.transaction.findFirst({
-            where: {
-                username: user.username,
-                type: "TOPUP",
-                position : "cart"
-            }
-        })
-
-        const priceInfo = await PriceTransactions(user.role, req.productCode);
-        
-        if (!priceInfo.status) {
-          return {
-            success: false,
-          };
-        }
-        
-        const price = priceInfo.price ?? 0;
-
-        const item =  await prisma.transactionItem.create({
-            data: {
-                price,
-                transactionItemId: GenerateId("ITEM"),
-                gameId: req.gameId,
-                gameServer : req.gameServer,
-                nickName: req.nickname,
-                quantity: 1,
-                provider : "DIGIFLAZZ",
-                productCode: req.productCode,
-                transactionId: transaction?.transactionId as string,   
-            }
-        })
+  
+  async addItemToCart(req: AddItemsToCart) {
+    try {
+      const user = await this.user.getUserByUsername(req.username);
+      if (!user) {
         return {
-            data: item,
-            success : true
+          success: false,
+          message: "User not found"
+        };
+      }
+  
+      const transaction = await this.prisma.transaction.findFirst({
+        where: {
+          username: user.username,
+          type: "TOPUP",
+          position: "cart"
         }
+      });
+  
+      if (!transaction) {
+        return {
+          success: false,
+          message: "Cart not found"
+        };
+      }
+  
+      const priceInfo = await PriceTransactions(user.role, req.productCode);
+      if (!priceInfo.status) {
+        return {
+          success: false,
+          message: "Product not found"
+        };
+      }
+      
+      const price = priceInfo.price ?? 0;
+  
+      const item = await this.prisma.transactionItem.create({
+        data: {
+          price,
+          transactionItemId: GenerateId("ITEM"),
+          gameId: req.gameId,
+          gameServer: req.gameServer,
+          nickName: req.nickname,
+          productName : priceInfo.productName,
+          quantity: 1,
+          productImage : priceInfo.logo,
+          provider: "DIGIFLAZZ",
+          productCode: req.productCode,
+          transactionId: transaction.transactionId,   
+        }
+      });
+  
+      // Update transaction with plain integer addition
+      await this.prisma.transaction.update({
+        where: {
+          transactionId: transaction.transactionId
+        },
+        data: {
+          amount: transaction.amount + parseInt(price.toString(), 10)
+        }
+      });
+      
+      return {
+        success: true,
+        data: item
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : "An unknown error occurred"
+      };
     }
-
-
+  }
   async getCartByUsername(username: string) {
     try {
       const cart = await this.prisma.transaction.findFirst({
@@ -185,11 +259,19 @@ export class TransactionRepository {
           message: "Cart not found"
         };
       }
+
+      const amountItems =  cart.items.length ?? 0
+
+      
+      const data = {
+          cart,
+          amountItems
+      }
       
       return {
         success: true,
         code: 200,
-        data: cart
+        data
       };
     } catch (error) {
       return {

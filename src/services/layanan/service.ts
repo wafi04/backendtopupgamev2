@@ -1,4 +1,4 @@
-import { CreateProduct, FilterProduct, UpdateProduct } from "@/common/interfaces/product";
+import { CreateProduct, FilterProduct, FilterProductByCategory, UpdateProduct } from "@/common/interfaces/product";
 import { ProductRepository } from "./repository";
 
 export class ProductService {
@@ -16,8 +16,8 @@ export class ProductService {
     async findById(id: number) {
         return await this.repository.FindById(id);
     }
-    async findProductByCategory(code : string) {
-        return this.repository.findProductByCategoryCode(code)
+    async findProductByCategory(filter : FilterProductByCategory) {
+        return this.repository.findProductByCategoryCode(filter)
     }
     async findAll(req: FilterProduct) {
         return await this.repository.FindAll(req);

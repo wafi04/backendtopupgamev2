@@ -1,11 +1,11 @@
 import prisma from "@/lib/prisma";
 import { Request, Response, Router } from "express";
-import { ContextAwareMiddleware } from "@/middleware/middleware-auth";
-import { ADMIN_ROLE } from "@/common/interfaces/user";
+import { AuthContextManager, ContextAwareMiddleware, RequestAuthContext } from "@/middleware/middleware-auth";
+import { ADMIN_ROLE, PLATINUM_ROLE } from "@/common/interfaces/user";
 import { asyncHandler } from "@/common/utils/handler";
 import { sendResponse } from "@/common/utils/response";
 import { ERROR_CODES } from "@/common/constants/error";
-import { FilterProduct, UpdateProduct } from "@/common/interfaces/product";
+import { FilterProduct, FilterProductByCategory, UpdateProduct } from "@/common/interfaces/product";
 import { ProductRepository } from "./repository";
 import { ProductService } from "./service";
 
@@ -76,16 +76,20 @@ ProductRoutes.get(
     sendResponse(res, data, "Get Products Successfully", 200);
   })
 );
+
+
   
-ProductRoutes.get('/category/code', asyncHandler(async (req: Request, res: Response) => {
-    const filter = {
+ProductRoutes.get('/category/code', ContextAwareMiddleware.authMiddleware,asyncHandler(async (req: Request, res: Response) => {
+    const authContext = (req as RequestAuthContext).authContext;
+    const filter : FilterProductByCategory = {
         code: req.query.code as string,
-        subcategory : req.query.subcategory as string
+        subcategory: req.query.subcategory as string ,
+        price: req.query.price as string,
+        role : authContext.role,
     }
-    console.log(filter.code)
-    if (!filter.code) {
+    if (!filter) {
        sendResponse(res,undefined,"Missing Code Category",404)
     }
-    const data = await service.findProductByCategory(filter.code)
+    const data = await service.findProductByCategory(filter)
     sendResponse(res,data,"Get Products Successfully",200)
 }))
