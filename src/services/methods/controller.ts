@@ -82,15 +82,12 @@ MethodsRoutes.get(
       code: (req.query.code as string) ?? "",
       isAll: req.query.isAll as string,
     };
-    console.log(filter);
     const response = await Service.FindAll({
       ...filter,
     });
-
     if (!response) {
       sendResponse(res, null, "Failed To Received Methods", 500);
     }
-
     sendResponse(res, response, "Send Methods Successfully", 200);
   })
 );

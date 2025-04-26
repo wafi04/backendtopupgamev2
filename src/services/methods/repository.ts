@@ -99,9 +99,12 @@ export class MethodsRepository {
       }
 
       if (req.isAll === "ALL") {
-        return await prisma.method.findMany({
+        const data = await prisma.method.findMany({
           where,
         });
+        return {
+          methods : data
+        }
       }
       const page = req.page || 1;
       const limit = req.limit || 10;

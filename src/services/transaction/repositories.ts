@@ -56,7 +56,7 @@ export class TransactionRepository {
         where: {
           username: user.username,
           type: "TOPUP",
-          position: "cart"
+          position: "CART"
         }
       });
       
@@ -105,7 +105,7 @@ export class TransactionRepository {
             transactionId: transactionId,
             amount: totalAmount,
             type: req.type,
-            position: "cart",
+            position: "CART",
             username: req.username,
             items : {
               create: transactionItems.map(item => {
@@ -219,7 +219,6 @@ export class TransactionRepository {
         }
       });
   
-      // Update transaction with plain integer addition
       await this.prisma.transaction.update({
         where: {
           transactionId: transaction.transactionId
@@ -245,7 +244,8 @@ export class TransactionRepository {
       const cart = await this.prisma.transaction.findFirst({
         where: {
           username: username,
-          position: "cart"
+          position: "CART",
+          status : "PENDING"
         },
         include: {
           items: true

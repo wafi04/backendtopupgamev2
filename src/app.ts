@@ -4,7 +4,7 @@ import router from "./routes";
 import { ConfigEnv } from "./config/env";
 import cors from "cors";
 import { createServer } from "http";
-import { setupSocket } from "./lib/websockets/socket";
+import { WebSocketServer } from "./lib/websockets/socket";
 
 const app: Express = express();
 const port = ConfigEnv().PORT || 4000;
@@ -12,14 +12,14 @@ const server = createServer(app);
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ConfigEnv().FRONTEND_URL,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-setupSocket(server);
+const socket = new WebSocketServer(server)
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

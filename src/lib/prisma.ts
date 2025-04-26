@@ -2,12 +2,10 @@
 import { ConfigEnv } from "@/config/env";
 import { PrismaClient } from "@prisma/client";
 
-// Ambil environment dari process.env.NODE_ENV atau default 'development'
 const environment = "development" as "development" | "production" | "test";
 
 const config = ConfigEnv(environment);
 
-// Buat instance PrismaClient
 const prismaClientSingleton = () => {
   return new PrismaClient({
     datasources: {
@@ -18,7 +16,6 @@ const prismaClientSingleton = () => {
   });
 };
 
-// Deklarasi tipe global supaya bisa menggunakan singleton pattern
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
 const globalForPrisma = globalThis as unknown as {

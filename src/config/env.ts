@@ -37,6 +37,12 @@ export const ConfigEnv = (
       DIGI_API_KEY: process.env.DIGI_API_KEY as string,
       DIGI_USERNAME: process.env.DIGI_USERNAME as string,
       REDIS_URL: process.env.REDIS_URL as string,
+      DUITKU_USERNAME : process.env.DUITKU_MERCHANT_CODE as string,
+      DUITKU_API_KEY : process.env.DUITKU_API_KEY as string,
+      DUITKU_BASE_URL : process.env.DUITKU_BASE_URL as string,
+      DUITKU_CALLBACK_URL : process.env.DUITKU_CALLBACK_URL as string,
+      DUITKU_RETURN_URL : process.env.DUITKU_RETURN_URL as string,
+      FRONTEND_URL  : process.env.FRONTEND_URL as string
     };
   }
 

@@ -35,101 +35,96 @@ export class ProductRepository {
         }
       }
       
-
-
-    async updateLayanan(req : UpdateProduct,id : number){
-        try {
-            return await prisma.product.update({
-                where : {
-                    id
-                },
-                data : {
-                    ...req
-                }
-            })
-        } catch (error) {
-            this.handlePrismaError(error)
-        }
+   async updateLayanan(req : UpdateProduct,id : number){
+      try {
+          return await prisma.product.update({
+              where : {
+                  id
+              },
+              data : {
+                  ...req
+              }
+          })
+      } catch (error) {
+          this.handlePrismaError(error)
+      }
     }
 
     async findProductByCategoryCode(filter: FilterProductByCategory) {
-  try {
-    const { price, subcategory, role } = filter
-    
-    // Define the select object using Prisma types
-    // This ensures TypeScript knows all available fields
-    const priceSelect: Prisma.ProductSelect = {
-      id: true,
-      name: true,
-      providerId: true,
-      provider: true,
-      price: true,
-      productImage: true,
-        status: true,
-    }
-    
-    // Add specific price field based on role
-    if (role === PLATINUM_ROLE) {
-      priceSelect.platinumPrice = true;
-    } else if (role === RESELLER_ROLE) {
-      priceSelect.resellerPrice = true;
-    } else {
-        priceSelect.regularPrice === true
-    }
-    
-    // Create order condition for price sorting
-    const orderBy = price === "min" 
-      ? { price: 'asc' as const } 
-      : price === "max" 
-        ? { price: 'desc' as const }
-        : undefined
-    
-    // Get all products for the category
-    const categoryData = await prisma.category.findUnique({
-      where: {
-        code: filter.code
-      },
-      include: {
-        products: {
-          select: priceSelect,
-          where: {
-            status: true
-          },
-          orderBy: orderBy
-        },
-        subCategories: true
-      }
-    })
-    
-    if (categoryData && subcategory && subcategory !== "all") {
-      const filteredProducts = categoryData.products.filter(product => {
-        const productCode = product.providerId.toLowerCase()
-        const match = productCode.match(/^([a-z]+)/)
-        const basePrefix = match ? match[0] : productCode
-        
-        return basePrefix === subcategory.toLowerCase()
-      })
-      
-      categoryData.products = filteredProducts
-    }
-    
-    return categoryData
-  } catch (error) {
-    console.log(error)
-    this.handlePrismaError(error)
-  }
-}
-    async DeleteLayanan(id : number){
-        try {
-            return await prisma.product.delete({
-                where : {
-                    id 
-                }
+      try {
+          const { price, subcategory, role } = filter
+          const priceSelect: Prisma.ProductSelect = {
+            id: true,
+            name: true,
+            providerId: true,
+            provider: true,
+            price: true,
+            productImage: true,
+            status: true,
+          }
+         
+          if (role === PLATINUM_ROLE) {
+            priceSelect.platinumPrice = true;
+            priceSelect.regularPrice = true;
+          } else if (role === RESELLER_ROLE) {
+            priceSelect.resellerPrice = true;
+            priceSelect.regularPrice = true;
+          } else {
+            priceSelect.regularPrice = true;
+          }
+
+          
+          const orderBy = price === "min" 
+            ? { price: 'asc' as const } 
+            : price === "max" 
+              ? { price: 'desc' as const }
+              : undefined
+          
+          const categoryData = await prisma.category.findUnique({
+            where: {
+              code: filter.code
+            },
+            include: {
+              products: {
+                select: priceSelect,
+                where: {
+                  status: true
+                },
+                orderBy: orderBy
+              },
+              subCategories: true
+            }
+          })
+          
+          if (categoryData && subcategory && subcategory !== "all") {
+            const filteredProducts = categoryData.products.filter(product => {
+              const productCode = product.providerId.toLowerCase()
+              const match = productCode.match(/^([a-z]+)/)
+              const basePrefix = match ? match[0] : productCode
+              
+              return basePrefix === subcategory.toLowerCase()
             })
+            
+            categoryData.products = filteredProducts
+          }
+          
+          return categoryData
         } catch (error) {
-            this.handlePrismaError(error)
+          console.log(error)
+          this.handlePrismaError(error)
         }
     }
+      async DeleteLayanan(id : number){
+          try {
+              return await prisma.product.delete({
+                  where : {
+                      id 
+                  }
+              })
+          } catch (error) {
+              this.handlePrismaError(error)
+          }
+      }
 
     async FindById(id : number){
         try {
